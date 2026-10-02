@@ -279,7 +279,7 @@
           aria-describedby="connect-error"
         />
         <p class="field-help">
-          Leave the invite blank to open the local workspace.
+          Join with your team's invite, or create a new workspace.
         </p>
         <p id="connect-error" class="error" role="alert"></p>
         <button type="submit" class="primary wide">Join workspace</button
@@ -319,9 +319,8 @@
       <p>Anyone with this invite can edit this workspace.</p>
       <label for="share-link">Workspace invite</label
       ><input id="share-link" readonly />
-      <p class="field-help">
-        Localhost links work on this computer. For other computers, host Relay
-        on a reachable server and use that server's address.
+      <p class="field-help" id="share-help">
+        This invite works across networks in a browser or the Relay desktop app.
       </p>
       <button id="copy-invite" class="primary wide">Copy invite</button>
       <p id="copy-status" role="status"></p>

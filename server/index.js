@@ -7,6 +7,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import * as Y from "yjs";
 import { diffLines } from "diff";
 import { cloudStore } from "./cloud-store.js";
+import { readJson, validToken, publishRoom } from "./share-local.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const colors = ["#6bbcff", "#f4bb73", "#b7a0ff", "#6fd6bb", "#f08bad"];
@@ -31,11 +32,15 @@ export async function startServer({
   dataDir = path.join(root, "data"),
   hosted = false,
   storage = null,
+  publicOrigin = "https://relay-bf93.onrender.com",
 } = {}) {
   fs.mkdirSync(dataDir, { recursive: true });
   if (hosted && !storage) throw new Error("Hosted Relay requires durable storage.");
   const rooms = new Map();
   const creations = [];
+  const publishing = new Map();
+  const sharePath = (id) => path.join(dataDir, `${id}.share.json`);
+  const shared = (room) => fs.existsSync(sharePath(room.id)) ? JSON.parse(fs.readFileSync(sharePath(room.id), "utf8")) : null;
   const reportSaveError = () => console.error("Workspace save failed; awaiting storage recovery.");
   const atomic = (filename, content) => {
     fs.writeFileSync(filename + ".tmp", content);
@@ -103,16 +108,22 @@ export async function startServer({
     rooms.set(id, room);
     return room;
   }
-  function createRoom(name = "Team workspace") {
+  function createRoom(name = "Team workspace", initial = {}) {
     const room = {
       id: randomBytes(8).toString("hex"),
       token: randomBytes(24).toString("hex"),
       name,
       doc: new Y.Doc(),
-      history: [],
+      history: Array.isArray(initial.history) ? initial.history.slice(0, 100) : [],
     };
     const files = room.doc.getMap("files");
-    room.doc.transact(() => {
+    if (initial.state) {
+      Y.applyUpdate(room.doc, decode(initial.state));
+      if (!files.size || [...files].some(([filename, text]) => !validPath(filename) || !(text instanceof Y.Text))) {
+        room.doc.destroy();
+        throw new Error("Invalid workspace files.");
+      }
+    } else room.doc.transact(() => {
       for (const [filename, text] of Object.entries(starters))
         files.set(filename, new Y.Text(text));
     });
@@ -153,7 +164,7 @@ export async function startServer({
     if (url.pathname === "/api/config" && req.method === "GET") {
       res.setHeader("Content-Type", "application/json");
       res.setHeader("Cache-Control", "no-store");
-      return res.end(JSON.stringify({ hosted }));
+      return res.end(JSON.stringify({ hosted, version: "0.1.2", acceptsWorkspaceImport: true }));
     }
     if (url.pathname === "/api/bootstrap" && req.method === "GET") {
       const loopback = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
@@ -165,7 +176,32 @@ export async function startServer({
       }
       res.setHeader("Content-Type", "application/json");
       res.setHeader("Cache-Control", "no-store");
-      return res.end(JSON.stringify(credentials(localRoom)));
+      return res.end(JSON.stringify(shared(localRoom) || credentials(localRoom)));
+    }
+    if (url.pathname === "/api/share" && req.method === "POST") {
+      const origin = req.headers.origin;
+      if (hosted || !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(req.socket.remoteAddress) || !origin || new URL(origin).host !== req.headers.host) {
+        res.writeHead(403); return res.end("Only the desktop host can share this workspace.");
+      }
+      const body = await readJson(req, 4096);
+      const room = typeof body.room === "string" ? loadRoom(body.room) : null;
+      if (!validToken(room, body.token)) { res.writeHead(403); return res.end("Invalid workspace credentials."); }
+      let config = shared(room);
+      if (!config) {
+        if (!publishing.has(room.id)) {
+          finishActivity(room);
+          const task = publishRoom(room, publicOrigin).then(result => {
+            atomic(sharePath(room.id), JSON.stringify(result));
+            broadcast(room, { type: "workspace-shared", config: result });
+            return result;
+          }).finally(() => publishing.delete(room.id));
+          publishing.set(room.id, task);
+        }
+        config = await publishing.get(room.id);
+      }
+      res.setHeader("Content-Type", "application/json");
+      res.setHeader("Cache-Control", "no-store");
+      return res.end(JSON.stringify(config));
     }
     if (url.pathname === "/api/rooms" && req.method === "POST") {
       const origin = req.headers.origin;
@@ -189,7 +225,9 @@ export async function startServer({
         }
         creations.push(Date.now());
       }
-      const room = createRoom();
+      const initial = await readJson(req);
+      if (initial.state !== undefined && (typeof initial.state !== "string" || !/^[A-Za-z0-9+/]*={0,2}$/.test(initial.state))) { res.writeHead(400); return res.end("Invalid workspace state."); }
+      const room = createRoom(typeof initial.name === "string" ? initial.name.slice(0, 80) : "Team workspace", initial);
       await persist(room);
       res.setHeader("Content-Type", "application/json");
       return res.end(JSON.stringify(credentials(room)));
@@ -276,6 +314,10 @@ export async function startServer({
             return ws.close(4003);
           }
           clearTimeout(joinTimeout);
+          if (!hosted && shared(room)) {
+            send(ws, { type: "workspace-shared", config: shared(room) });
+            return ws.close(4004, "Workspace is now online");
+          }
           ws.room = room;
           ws.id = randomUUID();
           ws.name = String(message.name || "Teammate").slice(0, 40);
@@ -440,6 +482,7 @@ if (
     port: Number(process.env.PORT || 4317),
     host: process.env.RELAY_HOST || "127.0.0.1",
     dataDir: process.env.RELAY_DATA_DIR || path.join(root, "data"),
+    publicOrigin: process.env.RELAY_PUBLIC_URL || "https://relay-bf93.onrender.com",
   });
   console.log(
     `Relay listening on http://${process.env.RELAY_HOST || "127.0.0.1"}:${instance.port}`,

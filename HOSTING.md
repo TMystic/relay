@@ -26,3 +26,9 @@ Anyone holding an invite has editing access to that room. Relay currently uses i
 ## Verification
 
 `npm test` exercises simultaneous edits, access protection, actor history, local restart, hosted creation, a fresh-disk restart, and storage failure acknowledgment behavior. The hosted test can use the real storage service by providing `RELAY_TEST_STORAGE_URL` and `RELAY_TEST_STORAGE_TOKEN` privately. Test rooms created by that test remain in the dedicated database for inspection.
+
+## Desktop invitations (0.1.2)
+
+Clicking **Invite teammate** in a local desktop workspace publishes its current files and history to the configured public Relay server and connects the desktop to that room. Local files remain on the device. Sharing waits for pending local edits to synchronize first. The same online invitation is remembered on disk; subsequent requests reuse it. The initial upload and the free-server wake can take about a minute. A failed upload leaves the local workspace available. The local sharing endpoint accepts only loopback requests from the local app origin with valid room credentials.
+
+The packaged app uses https://relay-bf93.onrender.com. Self-hosted servers may configure `RELAY_PUBLIC_URL` to another Relay server. The online server needs the 0.1.2 room-import support before desktop publishing can be used. After sharing, collaboration runs on the online server; local-only workspaces remain local until Invite is clicked.

@@ -14,11 +14,11 @@ Packaged downloads bundle the editor, its local room server, and the Electron ru
 
 On Windows, run `npm ci` followed by `npm run package:win`. On Linux, run `npm ci` followed by `npm run package:linux`.
 
-Files appear in `release/`: `Relay-Setup-0.1.1-x64.exe`, `Relay-Portable-0.1.1-x64.exe`, and `Relay-0.1.1-x64.deb`. Double-click the Windows installer; the portable executable runs without installation. On Ubuntu, install the downloaded package with `sudo apt install ./Relay-0.1.1-x64.deb`, then launch Relay from Applications or run `relay`.
+Files appear in `release/`: `Relay-Setup-0.1.2-x64.exe`, `Relay-Portable-0.1.2-x64.exe`, and `Relay-0.1.2-x64.deb`. Double-click the Windows installer; the portable executable runs without installation. On Ubuntu, install the downloaded package with `sudo apt install ./Relay-0.1.2-x64.deb`, then launch Relay from Applications or run `relay`.
 
 Linux requires a graphical desktop or WSLg. Install dependencies separately on each operating system; do not reuse Windows `node_modules` on Linux. Windows packages are unsigned. Native desktop runtime testing remains incomplete; see VERIFICATION.md.
 
-The included **Build downloadable packages** GitHub Actions workflow builds both platforms on a push to `main`, pull requests, or manual dispatch. Download the Windows and Linux artifacts from a successful workflow run. A version tag such as `v0.1.1` creates a draft GitHub release with installers attached after both builds succeed. Review and publish that draft to make release downloads public. The tag should match the version in `package.json`.
+The included **Build downloadable packages** GitHub Actions workflow builds both platforms on a push to `main`, pull requests, or manual dispatch. Download the Windows and Linux artifacts from a successful workflow run. A version tag such as `v0.1.2` creates a draft GitHub release with installers attached after both builds succeed. Review and publish that draft to make release downloads public. The tag should match the version in `package.json`.
 
 ```powershell
 cd path/to/relay

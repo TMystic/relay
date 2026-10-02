@@ -611,7 +611,10 @@ async function join(config, name) {
     socket.onmessage = (event) => {
       if (current !== session || current.closed) return;
       const message = JSON.parse(event.data);
-      if (message.type === "init") {
+      if (message.type === "workspace-shared") {
+        if (!current.sharing) join(message.config, name).catch(error => setBanner(error.message));
+        return;
+      } else if (message.type === "init") {
         Y.applyUpdate(doc, bytes(message.state), "remote");
         current.id = message.id;
         current.color = message.color;
@@ -768,7 +771,14 @@ $("file-form").onsubmit = (event) => {
   $("file-form").querySelector("button.primary").disabled = true;
   send({ type: "create-file", path: filename });
 };
-$("invite").onclick = () => {
+const waitForSync = async (condition) => {
+  const deadline = Date.now() + 120000;
+  while (!condition()) {
+    if (Date.now() > deadline) throw new Error("The online server is taking longer to respond. Please retry.");
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+};
+$("invite").onclick = async () => {
   if (!session) {
     $("connect-error").textContent =
       "Open a workspace first, then invite your teammates.";
@@ -776,9 +786,42 @@ $("invite").onclick = () => {
     $("display-name").focus();
     return;
   }
-  $("share-link").value = invitation();
-  $("copy-status").textContent = "";
+  const current = session;
+  const local = ["127.0.0.1", "localhost", "[::1]"].includes(new URL(current.origin).hostname);
+  $("share-link").value = "";
+  $("copy-invite").disabled = true;
+  $("invite").disabled = true;
+  $("copy-status").textContent = local ? "Sharing your files online… The free server may take a minute to wake." : "";
   $("invite-dialog").showModal();
+  try {
+    if (local) {
+      if (!ready) throw new Error("Reconnect to this workspace before sharing it online.");
+      current.sharing = true;
+      editor.updateOptions({ readOnly: true });
+      await waitForSync(() => current === session && ready && ack >= seq);
+      const file = activeFile;
+      const response = await fetch("/api/share", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ room: current.room, token: current.token }),
+        signal: AbortSignal.timeout(120000),
+      });
+      if (!response.ok) throw new Error("Could not share online. Your local files are safe. Please retry.");
+      const config = await response.json();
+      await join(config, current.name);
+      await waitForSync(() => session.origin === config.origin && ready && ack >= seq);
+      if (session.doc.getMap("files").has(file)) openFile(file);
+    }
+    $("share-link").value = invitation();
+    $("share-help").textContent = "This invite works across networks in a browser or the Relay desktop app.";
+    $("copy-status").textContent = "Ready to share. Your workspace syncs online.";
+    $("copy-invite").disabled = false;
+  } catch (error) {
+    $("copy-status").textContent = error.message;
+  } finally {
+    current.sharing = false;
+    editor.updateOptions({ readOnly: !ready });
+    $("invite").disabled = false;
+  }
 };
 $("copy-invite").onclick = async () => {
   try {
@@ -823,7 +866,8 @@ async function submitConnect(create) {
       });
       if (!response.ok)
         throw new Error("An invite is required to join this server.");
-      config = { ...(await response.json()), origin: location.origin };
+      const workspace = await response.json();
+      config = { ...workspace, origin: workspace.origin || location.origin };
     }
     await join(config, name);
     $("connect-dialog").close();
