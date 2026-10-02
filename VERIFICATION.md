@@ -2,6 +2,8 @@
 
 ## Passed
 
+- 0.1.1 startup flow: close the initial join dialog, click Invite teammate, enter a name, join the local workspace, and open the invitation dialog. Verified in the browser. Unjoined startup now says Not connected instead of Connecting.
+
 - Production renderer build.
 - Professional redesign visually inspected at 1440 × 900 and 390 × 844; no horizontal page overflow observed. Temporary viewport overrides were reset.
 - File search, empty results, clear search, quick file navigation, keyboard command selection, team panel toggle, font controls, and saved plugin state after reload checked in the browser.
@@ -16,7 +18,7 @@
 
 - Packaging: Windows x64 NSIS installer and portable executable built successfully with electron-builder 26.15.3 and Electron 40.10.2. Packaged renderer/server/dependencies were checked. Packaged Windows smoke launch still fails in this environment with graphics-process code `0xC0000135`; an installer build is not proof of successful runtime launch.
 - Linux x64 directory built from the official Electron archive with its SHA256 checked against the vendor's checksum file. The downloadable amd64 `.deb` was assembled on Windows with Debian archive structure, desktop entry, dependencies, root-owned files, and sandbox permissions. Ubuntu installation/runtime and native GitHub Actions builds have not been executed here.
-- The GitHub packaging workflow is included in source. GitHub authentication in this session did not permit pushing the changes; apply the included packaging patch and push from your authenticated Ubuntu checkout to enable it.
+- The GitHub packaging workflow is included in source and has been pushed through the connected GitHub account. Native package build results must be checked in Actions; local installer generation does not establish native runtime success.
 
 - Electron binary downloaded and launch attempted, but its graphics process failed with Windows exit code `0xC0000135` in this execution environment. A second launch with software rendering also failed. Desktop runtime verification remains incomplete; the launch script and Electron shell are included.
 - No multi-computer LAN, internet-hosted, large-team, screen-reader, or native Windows installer testing was performed.

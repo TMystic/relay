@@ -769,7 +769,13 @@ $("file-form").onsubmit = (event) => {
   send({ type: "create-file", path: filename });
 };
 $("invite").onclick = () => {
-  if (!session) return;
+  if (!session) {
+    $("connect-error").textContent =
+      "Open a workspace first, then invite your teammates.";
+    $("connect-dialog").showModal();
+    $("display-name").focus();
+    return;
+  }
   $("share-link").value = invitation();
   $("copy-status").textContent = "";
   $("invite-dialog").showModal();
