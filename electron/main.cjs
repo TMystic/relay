@@ -47,7 +47,7 @@ app
       height: 980,
       minWidth: 760,
       minHeight: 560,
-      backgroundColor: "#101923",
+      backgroundColor: "#1e1e1e",
       title: "Relay",
       webPreferences: {
         nodeIntegration: false,

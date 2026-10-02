@@ -8,6 +8,18 @@ On Windows, double-click **Launch Relay.cmd**, or use the commands below. The so
 
 Requires Node.js 20.19+ (Node.js 22 LTS recommended).
 
+## Build Windows and Linux downloads
+
+Packaged downloads bundle the editor, its local room server, and the Electron runtime. End users do not need Node.js.
+
+On Windows, run `npm ci` followed by `npm run package:win`. On Linux, run `npm ci` followed by `npm run package:linux`.
+
+Files appear in `release/`: `Relay-Setup-0.1.0-x64.exe`, `Relay-Portable-0.1.0-x64.exe`, and `Relay-0.1.0-x64.deb`. Double-click the Windows installer; the portable executable runs without installation. On Ubuntu, install the downloaded package with `sudo apt install ./Relay-0.1.0-x64.deb`, then launch Relay from Applications or run `relay`.
+
+Linux requires a graphical desktop or WSLg. Install dependencies separately on each operating system; do not reuse Windows `node_modules` on Linux. Windows packages are unsigned. Native desktop runtime testing remains incomplete; see VERIFICATION.md.
+
+The included **Build downloadable packages** GitHub Actions workflow builds both platforms on a push to `main`, pull requests, or manual dispatch. Download the Windows and Linux artifacts from a successful workflow run. A version tag such as `v0.1.0` creates a draft GitHub release with installers attached after both builds succeed. Review and publish that draft to make release downloads public. The tag should match the version in `package.json`.
+
 ```powershell
 cd path/to/relay
 npm install
@@ -46,7 +58,7 @@ Desktop data is stored in Electron's per-user Relay data directory. Standalone s
 
 ## Boundaries and next milestones
 
-This is not yet a full VS Code replacement or an installer. It has no local-folder/Git import, Git commit/push, VS Code Marketplace/VSIX extensions, language servers, debugging, terminal execution, role-based permissions, verified accounts, invite revocation, encrypted internet hosting, automatic updates, or large-team load testing. There is no configured member cap, but there is no unlimited-scale guarantee. Shared live files are the collaboration workspace; exporting a file does not keep an existing local repository in sync.
+This is not yet a full VS Code replacement. It has no local-folder/Git import, Git commit/push, VS Code Marketplace/VSIX extensions, language servers, debugging, terminal execution, role-based permissions, verified accounts, invite revocation, encrypted internet hosting, automatic updates, or large-team load testing. There is no configured member cap, but there is no unlimited-scale guarantee. Shared live files are the collaboration workspace; exporting a file does not keep an existing local repository in sync.
 
 Next: add project-folder import/export and Git checkpoints; then accounts with owner/editor/viewer roles and invite revocation; then authenticated hosted rooms and a packaged desktop installer. Run project code only in an explicitly designed isolated execution environment.
 

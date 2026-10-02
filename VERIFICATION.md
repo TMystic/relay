@@ -14,6 +14,10 @@
 
 ## Unverified or limited
 
+- Packaging: Windows x64 NSIS installer and portable executable built successfully with electron-builder 26.15.3 and Electron 40.10.2. Packaged renderer/server/dependencies were checked. Packaged Windows smoke launch still fails in this environment with graphics-process code `0xC0000135`; an installer build is not proof of successful runtime launch.
+- Linux x64 directory built from the official Electron archive with its SHA256 checked against the vendor's checksum file. The downloadable amd64 `.deb` was assembled on Windows with Debian archive structure, desktop entry, dependencies, root-owned files, and sandbox permissions. Ubuntu installation/runtime and native GitHub Actions builds have not been executed here.
+- The GitHub packaging workflow is included in source. GitHub authentication in this session did not permit pushing the changes; apply the included packaging patch and push from your authenticated Ubuntu checkout to enable it.
+
 - Electron binary downloaded and launch attempted, but its graphics process failed with Windows exit code `0xC0000135` in this execution environment. A second launch with software rendering also failed. Desktop runtime verification remains incomplete; the launch script and Electron shell are included.
 - No multi-computer LAN, internet-hosted, large-team, screen-reader, or native Windows installer testing was performed.
 

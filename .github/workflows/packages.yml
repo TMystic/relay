@@ -1,0 +1,67 @@
+name: Build downloadable packages
+
+on:
+  push:
+    branches: [main, packaging/windows-linux]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: package:win
+            artifact: Relay-Windows-x64
+          - os: ubuntu-24.04
+            script: package:linux
+            artifact: Relay-Linux-amd64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run ${{ matrix.script }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            release/*.exe
+            release/*.deb
+          if-no-files-found: error
+          retention-days: 30
+
+  draft-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Relay-*
+          path: packages
+          merge-multiple: true
+      - name: Create draft release and attach installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --verify-tag --draft --title "Relay $RELEASE_TAG" --notes "Relay desktop preview for Windows x64 and Debian/Ubuntu amd64. Windows binaries are unsigned."
+          fi
+          gh release upload "$RELEASE_TAG" packages/*.exe packages/*.deb --clobber

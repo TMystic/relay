@@ -8,7 +8,10 @@
     "build": "vite build --configLoader runner",
     "start": "npm run build && electron .",
     "server": "node server/index.js",
-    "test": "node --test tests/sync.test.js"
+    "test": "node --test tests/sync.test.js",
+    "package:win": "npm run build && electron-builder --win nsis portable --x64 --publish never",
+    "package:linux": "npm run build && electron-builder --linux deb --x64 --publish never",
+    "package:dir": "npm run build && electron-builder --dir --publish never"
   },
   "dependencies": {
     "diff": "^8.0.2",
@@ -22,6 +25,58 @@
   },
   "devDependencies": {
     "electron": "^40.0.0",
+    "electron-builder": "26.15.3",
     "vite": "^6.1.0"
+  },
+  "description": "Relay collaborative desktop coding editor",
+  "author": {
+    "name": "TMystic"
+  },
+  "homepage": "https://github.com/TMystic/relay",
+  "license": "UNLICENSED",
+  "build": {
+    "appId": "io.github.tmystic.relay",
+    "productName": "Relay",
+    "asar": true,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "server/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "Relay-Setup-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Relay-Portable-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "Development",
+      "maintainer": "TMystic",
+      "executableName": "relay",
+      "target": [
+        "deb"
+      ],
+      "artifactName": "Relay-${version}-${arch}.${ext}"
+    }
   }
 }
