@@ -120,7 +120,8 @@
         "libsecret-1-0",
         "libxkbfile1",
         "libc6 (>= 2.31)"
-      ]
+      ],
+      "afterInstall": "scripts/linux-after-install.tpl"
     }
   }
 }
