@@ -8,7 +8,7 @@
     "build": "vite build --configLoader runner",
     "start": "npm run build && electron .",
     "server": "node server/index.js",
-    "test": "node --test tests/sync.test.js",
+    "test": "node --test tests/*.test.js",
     "package:win": "npm run build && electron-builder --win nsis portable --x64 --publish never",
     "package:linux": "npm run build && electron-builder --linux deb --x64 --publish never",
     "package:dir": "npm run build && electron-builder --dir --publish never"

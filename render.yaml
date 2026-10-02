@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: relay
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run server
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ELECTRON_SKIP_BINARY_DOWNLOAD
+        value: "1"
+      - key: RELAY_HOST
+        value: 0.0.0.0
+      - key: RELAY_HOSTED
+        value: "1"
+      - key: RELAY_STORAGE_URL
+        value: https://xpmgudpoeaggadfaarct.supabase.co/functions/v1/relay-store
+      - key: RELAY_STORAGE_TOKEN
+        sync: false

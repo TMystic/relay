@@ -816,6 +816,8 @@ async function submitConnect(create) {
     if (!create && $("invite-link").value.trim())
       config = parseInvite($("invite-link").value.trim());
     else {
+      const settings = await fetch("/api/config").then(r => r.json());
+      create = create || settings.hosted;
       const response = await fetch(create ? "/api/rooms" : "/api/bootstrap", {
         method: create ? "POST" : "GET",
       });

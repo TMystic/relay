@@ -6,6 +6,7 @@ import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { WebSocketServer, WebSocket } from "ws";
 import * as Y from "yjs";
 import { diffLines } from "diff";
+import { cloudStore } from "./cloud-store.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const colors = ["#6bbcff", "#f4bb73", "#b7a0ff", "#6fd6bb", "#f08bad"];
@@ -28,9 +29,14 @@ export async function startServer({
   port = 4317,
   host = "127.0.0.1",
   dataDir = path.join(root, "data"),
+  hosted = false,
+  storage = null,
 } = {}) {
   fs.mkdirSync(dataDir, { recursive: true });
+  if (hosted && !storage) throw new Error("Hosted Relay requires durable storage.");
   const rooms = new Map();
+  const creations = [];
+  const reportSaveError = () => console.error("Workspace save failed; awaiting storage recovery.");
   const atomic = (filename, content) => {
     fs.writeFileSync(filename + ".tmp", content);
     fs.renameSync(filename + ".tmp", filename);
@@ -41,17 +47,22 @@ export async function startServer({
   const broadcast = (room, message, except) => {
     for (const peer of room.peers) if (peer !== except) send(peer, message);
   };
+  if (storage) {
+    for (const room of await storage.loadAll()) {
+      if (!/^[a-f0-9]{16}$/.test(room.id)) throw new Error("Invalid stored room ID.");
+      atomic(path.join(dataDir, `${room.id}.json`), JSON.stringify(room));
+    }
+  }
   function persist(room) {
+    const snapshot = { id: room.id, token: room.token, name: room.name, state: encode(Y.encodeStateAsUpdate(room.doc)), history: structuredClone(room.history) };
     atomic(
       path.join(dataDir, `${room.id}.json`),
-      JSON.stringify({
-        id: room.id,
-        token: room.token,
-        name: room.name,
-        state: encode(Y.encodeStateAsUpdate(room.doc)),
-        history: room.history,
-      }),
+      JSON.stringify(snapshot),
     );
+    const saved = storage ? storage.save(snapshot) : Promise.resolve();
+    room.saved = saved;
+    saved.catch(reportSaveError);
+    return saved;
   }
   function finishActivity(room) {
     clearTimeout(room.activityTimer);
@@ -111,9 +122,9 @@ export async function startServer({
   }
   const defaultPath = path.join(dataDir, "default.json");
   let localRoom;
-  if (fs.existsSync(defaultPath))
+  if (!hosted && fs.existsSync(defaultPath))
     localRoom = loadRoom(JSON.parse(fs.readFileSync(defaultPath)).id);
-  if (!localRoom) {
+  if (!hosted && !localRoom) {
     localRoom = createRoom("Launchpad");
     atomic(defaultPath, JSON.stringify({ id: localRoom.id }));
   }
@@ -130,15 +141,25 @@ export async function startServer({
     ".json": "application/json",
     ".ttf": "font/ttf",
   };
-  const server = http.createServer((req, res) => {
+  const server = http.createServer(async (req, res) => {
+    try {
     const url = new URL(req.url, "http://localhost");
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Referrer-Policy", "no-referrer");
+    if (url.pathname === "/health") {
+      res.writeHead(storage?.healthy === false ? 503 : 200);
+      return res.end(storage?.healthy === false ? "Storage unavailable" : "ok");
+    }
+    if (url.pathname === "/api/config" && req.method === "GET") {
+      res.setHeader("Content-Type", "application/json");
+      res.setHeader("Cache-Control", "no-store");
+      return res.end(JSON.stringify({ hosted }));
+    }
     if (url.pathname === "/api/bootstrap" && req.method === "GET") {
       const loopback = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
         req.socket.remoteAddress,
       );
-      if (!loopback) {
+      if (hosted || !loopback) {
         res.writeHead(403);
         return res.end("An invite is required.");
       }
@@ -148,19 +169,28 @@ export async function startServer({
     }
     if (url.pathname === "/api/rooms" && req.method === "POST") {
       const origin = req.headers.origin;
-      if (origin && new URL(origin).host !== req.headers.host) {
+      if ((hosted && !origin) || (origin && new URL(origin).host !== req.headers.host)) {
         res.writeHead(403);
         return res.end();
       }
       if (
-        !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
+        !hosted && !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
           req.socket.remoteAddress,
         )
       ) {
         res.writeHead(403);
         return res.end("Only the host can create workspaces.");
       }
+      if (hosted) {
+        while (creations.length && creations[0] < Date.now() - 3600000) creations.shift();
+        if (creations.length >= 30) {
+          res.writeHead(429, { "Retry-After": "3600" });
+          return res.end("Workspace creation limit reached. Try again later.");
+        }
+        creations.push(Date.now());
+      }
       const room = createRoom();
+      await persist(room);
       res.setHeader("Content-Type", "application/json");
       return res.end(JSON.stringify(credentials(room)));
     }
@@ -195,6 +225,7 @@ export async function startServer({
     );
     if (req.method === "HEAD") return res.end();
     fs.createReadStream(filename).pipe(res);
+    } catch { res.writeHead(503); res.end("Relay is temporarily unavailable. Please retry."); }
   });
   const wss = new WebSocketServer({
     server,
@@ -220,7 +251,7 @@ export async function startServer({
     const joinTimeout = setTimeout(() => {
       if (!ws.room) ws.close(4001, "Join required");
     }, 10000);
-    ws.on("message", (raw) => {
+    ws.on("message", async (raw) => {
       try {
         const message = JSON.parse(raw.toString());
         if (!ws.room) {
@@ -301,6 +332,7 @@ export async function startServer({
             clearTimeout(room.activityTimer);
             room.activityTimer = setTimeout(() => finishActivity(room), 700);
           }
+          await persist(room);
           send(ws, { type: "ack", seq: message.seq });
         } else if (message.type === "presence") {
           ws.file = validPath(message.file) ? message.file : "";
@@ -335,7 +367,7 @@ export async function startServer({
           };
           room.history.unshift(entry);
           room.history.length = Math.min(room.history.length, 100);
-          persist(room);
+          await persist(room);
           broadcast(room, { type: "activity", entry });
           send(ws, { type: "file-created", file: message.path });
         }
@@ -374,20 +406,22 @@ export async function startServer({
     server.once("error", reject);
     server.listen(port, host, resolve);
   });
-  const flush = () => {
+  const flush = async () => {
+    const saves = [];
     for (const room of rooms.values()) {
       finishActivity(room);
-      persist(room);
+      saves.push(persist(room));
     }
+    await Promise.all(saves);
   };
   return {
     server,
     port: server.address().port,
-    credentials: credentials(localRoom),
+    credentials: localRoom ? credentials(localRoom) : null,
     flush,
     close: async () => {
       clearInterval(heartbeat);
-      flush();
+      await flush();
       for (const ws of wss.clients) ws.terminate();
       await new Promise((resolve) => wss.close(resolve));
       await new Promise((resolve) => server.close(resolve));
@@ -399,7 +433,10 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
 ) {
+  const hosted = process.env.RELAY_HOSTED === "1";
   const instance = await startServer({
+    hosted,
+    storage: hosted ? cloudStore({ url: process.env.RELAY_STORAGE_URL, token: process.env.RELAY_STORAGE_TOKEN }) : null,
     port: Number(process.env.PORT || 4317),
     host: process.env.RELAY_HOST || "127.0.0.1",
     dataDir: process.env.RELAY_DATA_DIR || path.join(root, "data"),
