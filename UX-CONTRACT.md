@@ -30,3 +30,7 @@ The user requested a restrained VS Code-style UI and explicitly chose Relay plug
 src/tools.js owns the bundled allowlisted plugin catalog and default preferences. src/main.js owns install/remove actions and applies options through applyPreferences. Preferences are local to this device with storage failure recovery. No package or external code is downloaded or evaluated. JSON formatting validates before changing the file, uses Monaco edits so collaboration and individual undo apply, and has its own undo boundary. VS Code Marketplace/VSIX compatibility remains unavailable.
 
 File search filters room paths locally, exposes clear and empty states, and refreshes on shared file changes. Queries are transient device state and are not included in room URLs. Quick navigation is a native modal with files and commands; it supports Enter, ArrowDown, Tab, Escape, and Ctrl/Cmd+P and ignores composing keystrokes. Native checkboxes own boolean settings, and buttons with an output own font size.
+
+## Full desktop engine — 0.2.0
+The user approved replacing the desktop workbench with Code-OSS. Native commands own folders, terminal and compatible Open VSX/VSIX extensions. The earlier contract applies to the browser companion. Relay's native extension owns invite/join, source mirroring, presence and review. Remote sessions cannot execute terminal commands. Shared deletion moves local files to trash. Verification: extension/engine-tests.cjs.
+

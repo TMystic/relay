@@ -1,0 +1,5 @@
+{
+  "version": "1.135.06055",
+  "win32": { "file": "VSCodium-win32-x64-1.135.06055.zip", "sha256": "0bec978f201238624bc9ad43966f5e201ed8afacc37d77035a822252d9c9c200" },
+  "linux": { "file": "VSCodium-linux-x64-1.135.06055.tar.gz", "sha256": "c09d8ac8dd7f52b09ee159ee24b440541dfd8f937a0f6f88cc428c78e48ee1f2" }
+}

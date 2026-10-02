@@ -15,9 +15,9 @@ const encode = (value) => Buffer.from(value).toString("base64");
 const decode = (value) => new Uint8Array(Buffer.from(value, "base64"));
 const validPath = (value) =>
   typeof value === "string" &&
-  /^[\w.-]+(?:\/[\w.-]+)*$/.test(value) &&
-  !value.split("/").some((p) => p === "." || p === "..") &&
-  value.length <= 120;
+  !/[\x00-\x1f<>:"\\|?*]/.test(value) &&
+  value.split("/").every((p) => p && p !== "." && p !== ".." && !/[. ]$/.test(p)) &&
+  value.length <= 240;
 const starters = {
   "src/main.js": `// Welcome to your shared workspace.\n// Invite a teammate. Edit together. Skip the push / pull loop.\n\nimport { createWorkspace } from './workspace.js';\n\nconst workspace = createWorkspace({\n  name: 'Our next big idea',\n  collaboration: true,\n});\n\nexport function welcome(name) {\n  return \`Hello, \${name}. Let's build something together.\`;\n}\n\nconsole.log(welcome('team'));\nconsole.log(workspace);\n`,
   "src/workspace.js": `export function createWorkspace({ name, collaboration }) {\n  return {\n    name,\n    collaboration,\n    members: [],\n    createdAt: new Date().toISOString(),\n  };\n}\n`,
@@ -73,7 +73,7 @@ export async function startServer({
     clearTimeout(room.activityTimer);
     const entry = room.pending;
     room.pending = null;
-    if (!entry || entry.before === entry.after) return;
+    if (!entry || (entry.before === entry.after && !["created", "deleted"].includes(entry.kind))) return;
     const diff = diffLines(entry.before, entry.after);
     entry.added = diff
       .filter((p) => p.added)
@@ -164,7 +164,7 @@ export async function startServer({
     if (url.pathname === "/api/config" && req.method === "GET") {
       res.setHeader("Content-Type", "application/json");
       res.setHeader("Cache-Control", "no-store");
-      return res.end(JSON.stringify({ hosted, version: "0.1.2", acceptsWorkspaceImport: true }));
+      return res.end(JSON.stringify({ hosted, version: "0.2.0", acceptsWorkspaceImport: true }));
     }
     if (url.pathname === "/api/bootstrap" && req.method === "GET") {
       const loopback = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
@@ -347,10 +347,11 @@ export async function startServer({
             [...files].map(([key, text]) => [key, text.toString()]),
           );
           Y.applyUpdate(room.doc, decode(message.update), ws);
-          for (const [filename, text] of files) {
+          for (const filename of new Set([...before.keys(), ...files.keys()])) {
             const prior = before.get(filename) || "";
-            const after = text.toString();
-            if (prior === after) continue;
+            const after = files.get(filename)?.toString() || "";
+            const kind = !before.has(filename) ? "created" : !files.has(filename) ? "deleted" : "edited";
+            if (prior === after && kind === "edited") continue;
             if (
               room.pending &&
               (room.pending.actorId !== ws.id || room.pending.file !== filename)
@@ -363,6 +364,7 @@ export async function startServer({
                 actor: ws.name,
                 color: ws.color,
                 file: filename,
+                kind,
                 before: prior,
                 after,
                 time: new Date().toISOString(),

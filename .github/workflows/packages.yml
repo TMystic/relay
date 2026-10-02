@@ -31,6 +31,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Prepare full editor for native verification
+        if: runner.os == 'Linux'
+        run: npm run build:desktop
+      - name: Verify folders, native editor, terminal and extensions
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:engine
       - run: npm run ${{ matrix.script }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'

@@ -1,72 +1,21 @@
-# Relay — a shared desktop coding editor
+# Relay — collaborative desktop editor
 
-Relay is a working first prototype of a team editor: Monaco source editing, real Yjs synchronization over WebSockets, contributor cursors, project rooms, a live activity feed, and read-only before/after change review. The desktop shell is Electron, with the same renderer available through the room server.
+Relay 0.2.0 uses the full Code-OSS engine through VSCodium. It includes real local folders, an integrated terminal, Git tools, language support and compatible Open VSX / VSIX extensions. Relay collaboration is a bundled native extension; the browser companion retains its earlier interface.
 
-## Start the desktop editor
+Use **File → Open Folder**, or **Relay: Create Folder** from the command palette. Use **Terminal → New Terminal** for a local shell. Install compatible extensions through the Extensions view or **Extensions: Install from VSIX**. Microsoft-exclusive extensions and Marketplace access are not guaranteed.
 
-On Windows, double-click **Launch Relay.cmd**, or use the commands below. The source and desktop shell are included. Desktop launch verification in this environment is incomplete; see VERIFICATION.md. The working browser companion can be started with `npm run build` followed by `npm run server` and opened at http://localhost:4317.
+In the Relay sidebar, select **Invite teammates** to share the current source workspace. Teammates select **Join workspace** and choose an empty local folder. Changes synchronize into that folder. Generated files, dependency folders, binary files and environment files are excluded. Sharing supports up to 1,000 files and 1 MB of text, with 512 KB per file. Invite holders have full editing access; names are self-declared. Terminals run locally and cannot be controlled by remote teammates.
 
-Requires Node.js 20.19+ (Node.js 22 LTS recommended).
+Use **Relay: Import Previous Workspace** to copy older desktop workspaces into a local project folder. Original data is retained.
 
-## Build Windows and Linux downloads
+## Run and build
 
-Packaged downloads bundle the editor, its local room server, and the Electron runtime. End users do not need Node.js.
+Requires Node.js 22 and a graphical desktop. Run `npm ci`, then `npm start`. The first build downloads and verifies the pinned upstream engine. Packaged users do not need Node.js.
 
-On Windows, run `npm ci` followed by `npm run package:win`. On Linux, run `npm ci` followed by `npm run package:linux`.
+Windows: `npm run package:win`. Linux: `npm run package:linux`. Packages appear in `release/`: `Relay-Setup-0.2.0-x64.exe`, `Relay-Portable-0.2.0-x64.exe`, and `Relay-0.2.0-x64.deb`. Windows packages are unsigned. Ubuntu: `sudo apt install ./Relay-0.2.0-x64.deb`.
 
-Files appear in `release/`: `Relay-Setup-0.1.2-x64.exe`, `Relay-Portable-0.1.2-x64.exe`, and `Relay-0.1.2-x64.deb`. Double-click the Windows installer; the portable executable runs without installation. On Ubuntu, install the downloaded package with `sudo apt install ./Relay-0.1.2-x64.deb`, then launch Relay from Applications or run `relay`.
+`npm test` checks collaboration and persistence. After `npm run build:desktop`, `npm run test:engine` checks the actual editor extension host, folders, terminal and third-party extensions. Headless Linux: `xvfb-run -a npm run test:engine`. GitHub Actions runs native checks on Linux and builds both platforms.
 
-Linux requires a graphical desktop or WSLg. Install dependencies separately on each operating system; do not reuse Windows `node_modules` on Linux. Windows packages are unsigned. Native desktop runtime testing remains incomplete; see VERIFICATION.md.
+Browser companion: `npm run build`, then `npm run server` and open http://localhost:4317. `npm run start:classic` opens the previous desktop interface.
 
-The included **Build downloadable packages** GitHub Actions workflow builds both platforms on a push to `main`, pull requests, or manual dispatch. Download the Windows and Linux artifacts from a successful workflow run. A version tag such as `v0.1.2` creates a draft GitHub release with installers attached after both builds succeed. Review and publish that draft to make release downloads public. The tag should match the version in `package.json`.
-
-```powershell
-cd path/to/relay
-npm install
-npm start
-```
-
-Enter your name and join the local workspace. Click **Invite teammate**, copy the invite, and open it in another browser window on this computer. Use a different name and edit the same file to watch edits merge live. Teammates using the desktop editor can paste the invite into **Switch workspace**.
-
-## Connect different computers
-
-Every editor must connect to the same room server. For a trusted local network, start the standalone room server on the host computer:
-
-```powershell
-npm run build
-$env:RELAY_HOST = '0.0.0.0'
-npm run server
-```
-
-Open http://localhost:4317 on the host, join, and copy the invite. Replace only `localhost` with the host's LAN address (for example `192.168.1.20`) and send that full invite to teammates. They can paste it into their desktop editor or open it in a browser. The host may need to allow the chosen port through their firewall. LAN connections use unencrypted HTTP; use this only on a trusted network. For internet collaboration, deploy the server behind HTTPS/WSS with account authentication and access controls before sharing sensitive code. This task has not deployed a public service.
-
-## What works
-
-- Neutral VS Code-style workbench, activity bar, file search, and Ctrl/Cmd+P quick navigation.
-- Relay plugin catalog: install/remove minimap, word wrap, bracket guides, and JSON formatter.
-- Device-local editor settings for font size, line numbers, and line highlighting.
-
-- Concurrent edits converge rather than overwrite one another.
-- Member presence, file following, and per-file selection/cursor colors.
-- File creation synchronizes across all connected members.
-- Activity names the editor and file, with timestamp and before/after diff.
-- Reconnection merges offline edits. IndexedDB stores local room document drafts.
-- Server state and the latest 100 activity snapshots survive restart.
-- Export the current file as a download.
-
-Desktop data is stored in Electron's per-user Relay data directory. Standalone server data is in `data/` (override with `RELAY_DATA_DIR`). Copy the whole directory for a backup. Invite tokens are secrets; anyone with one has full edit access. Keep invites private. Names are self-declared, not verified identities.
-
-## Boundaries and next milestones
-
-This is not yet a full VS Code replacement. It has no local-folder/Git import, Git commit/push, VS Code Marketplace/VSIX extensions, language servers, debugging, terminal execution, role-based permissions, verified accounts, invite revocation, encrypted internet hosting, automatic updates, or large-team load testing. There is no configured member cap, but there is no unlimited-scale guarantee. Shared live files are the collaboration workspace; exporting a file does not keep an existing local repository in sync.
-
-Next: add project-folder import/export and Git checkpoints; then accounts with owner/editor/viewer roles and invite revocation; then authenticated hosted rooms and a packaged desktop installer. Run project code only in an explicitly designed isolated execution environment.
-
-## Verification
-
-```powershell
-npm test
-npm run build
-```
-
-The sync integration test uses actual WebSocket clients to verify simultaneous editing, offline merge, room isolation, invalid-invite rejection, file creation, history attribution, and restart persistence.
+See [FULL-EDITOR.md](FULL-EDITOR.md) for migration, storage, server settings and compatibility. Verified identities, role permissions, invite revocation, automatic updates and large-team load guarantees remain future work.

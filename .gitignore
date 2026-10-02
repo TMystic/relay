@@ -4,3 +4,8 @@ release/
 data/
 *.log
 test-results/
+engine-runtime/
+.engine-cache/
+.engine-test/
+desktop-assets/
+extension/dist/
