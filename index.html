@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Relay — shared coding workspace</title>
+    <link rel="icon" href="/favicon.svg" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="titlebar">
+        <div class="brand"><span class="brand-mark">R</span> Relay</div>
+        <div class="project-label">
+          <span id="room-title">Shared workspace</span
+          ><span class="slash">/</span><span>live project</span>
+        </div>
+        <button
+          id="quick-open"
+          class="command-trigger"
+          title="Go to file (Ctrl+P)"
+        >
+          <span>Search files and commands</span><kbd>Ctrl P</kbd>
+        </button>
+        <button id="connect" class="quiet">Switch workspace</button>
+      </header>
+      <div class="workspace-bar">
+        <div>
+          <span class="eyebrow">SHARED WORKSPACE</span>
+          <h1 id="workspace-title">Workspace</h1>
+        </div>
+        <div class="workspace-actions">
+          <span id="avatars" class="avatars"></span
+          ><button id="invite" class="primary">Invite teammate</button>
+        </div>
+      </div>
+      <div id="connection-banner" class="banner" role="status" hidden></div>
+      <main class="workbench">
+        <nav class="activity-bar" aria-label="Workspace views">
+          <button
+            class="rail-button selected"
+            data-view="explorer-view"
+            aria-label="Explorer"
+            aria-pressed="true"
+            title="Explorer"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 3h11v15H8zM5 7H3v14h12v-2" />
+            </svg>
+          </button>
+          <button
+            class="rail-button"
+            data-view="search-view"
+            aria-label="Search project files"
+            aria-pressed="false"
+            title="Search files"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10" cy="10" r="6.5" />
+              <path d="m15 15 6 6" />
+            </svg>
+          </button>
+          <button
+            class="rail-button"
+            data-view="extensions-view"
+            aria-label="Extensions"
+            aria-pressed="false"
+            title="Extensions"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M3 3h7v7H3zM3 14h7v7H3zM14 14h7v7h-7zM16 2l6 4-4 6-6-4z"
+              />
+            </svg>
+          </button>
+          <button
+            id="toggle-team"
+            class="rail-button"
+            aria-label="Toggle team panel"
+            aria-pressed="true"
+            title="Team collaboration"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="9" cy="7" r="3" />
+              <path
+                d="M3 21v-4a6 6 0 0 1 12 0v4M16 4a3 3 0 0 1 0 6m3 11v-4a5 5 0 0 0-3-4"
+              />
+            </svg>
+          </button>
+          <button
+            class="rail-button rail-bottom"
+            data-view="settings-view"
+            aria-label="Editor settings"
+            aria-pressed="false"
+            title="Settings"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3v3m0 12v3M3 12h3m12 0h3M6 6l2 2m8 8 2 2M6 18l2-2m8-8 2-2"
+              />
+              <circle cx="12" cy="12" r="6" />
+              <circle cx="12" cy="12" r="2" />
+            </svg>
+          </button>
+        </nav>
+        <aside class="explorer">
+          <section id="explorer-view" class="sidebar-view">
+            <div class="panel-heading">
+              <span>EXPLORER</span
+              ><button
+                id="new-file"
+                class="icon-button"
+                aria-label="Create file"
+                title="Create file"
+              >
+                +
+              </button>
+            </div>
+            <div class="folder-heading">
+              ⌄ <span id="folder-name">workspace</span>
+            </div>
+            <nav id="files" aria-label="Project files"></nav>
+            <div class="explorer-bottom">
+              <span class="small-label">COLLABORATION</span>
+              <p>Edits sync automatically.</p>
+              <div id="room-code" class="room-code"></div>
+              <button id="download" class="quiet wide">
+                Export current file
+              </button>
+            </div>
+          </section>
+          <section id="search-view" class="sidebar-view" hidden>
+            <div class="panel-heading">SEARCH FILES</div>
+            <div class="search-field">
+              <label class="sr-only" for="file-search"
+                >Find a project file</label
+              ><input
+                id="file-search"
+                type="search"
+                placeholder="Find a file…"
+              /><button id="clear-search" aria-label="Clear file search" hidden>
+                ×
+              </button>
+            </div>
+            <div id="search-results" class="sidebar-results"></div>
+            <p class="sidebar-help">Search by name or path.</p>
+          </section>
+          <section id="extensions-view" class="sidebar-view" hidden>
+            <div class="panel-heading">EXTENSIONS</div>
+            <div class="extensions-intro">
+              <h2>Relay tools</h2>
+              <p>Optional tools for this editor.</p>
+            </div>
+            <div id="extensions-list"></div>
+            <div class="compatibility-note">
+              <strong>VS Code compatibility</strong>
+              <p>
+                Marketplace extensions and .vsix packages are not supported by
+                the current editor engine.
+              </p>
+              <button id="extension-info" class="quiet wide">
+                View compatibility details
+              </button>
+            </div>
+          </section>
+          <section id="settings-view" class="sidebar-view" hidden>
+            <div class="panel-heading">EDITOR SETTINGS</div>
+            <div class="settings-body">
+              <h2>Appearance & editing</h2>
+              <p class="sidebar-help">Saved on this device.</p>
+              <label for="font-size">Editor font size</label>
+              <div class="font-controls">
+                <button
+                  id="font-decrease"
+                  aria-label="Decrease editor font size"
+                >
+                  −</button
+                ><output id="font-size">14 px</output
+                ><button
+                  id="font-increase"
+                  aria-label="Increase editor font size"
+                >
+                  +
+                </button>
+              </div>
+              <label class="setting-row"
+                ><span>Line numbers</span
+                ><input id="setting-lines" type="checkbox" checked
+              /></label>
+              <label class="setting-row"
+                ><span>Highlight current line</span
+                ><input id="setting-highlight" type="checkbox" checked
+              /></label>
+              <button id="reset-settings" class="quiet wide">
+                Reset editor settings
+              </button>
+            </div>
+          </section>
+        </aside>
+        <section class="code-panel" aria-label="Code editor">
+          <div class="file-tabs" id="file-tabs"></div>
+          <div class="breadcrumb">
+            <span id="file-path">Connecting…</span
+            ><span id="file-presence"></span>
+          </div>
+          <div id="editor"></div>
+          <div class="editor-footer">
+            <button id="undo" title="Undo my changes (Ctrl+Z)">Undo</button>
+            <button id="redo" title="Redo my changes (Ctrl+Y)">Redo</button>
+            <span id="position">Ln 1, Col 1</span
+            ><span id="language">JavaScript</span><span>UTF-8</span>
+          </div>
+        </section>
+        <aside class="collaboration">
+          <div class="collab-heading">
+            <div>
+              <h2>COLLABORATION</h2>
+              <p>Live workspace</p>
+            </div>
+          </div>
+          <section class="presence-section">
+            <div class="panel-heading">
+              <span>IN THIS WORKSPACE</span
+              ><span id="member-count" class="count">0</span>
+            </div>
+            <div id="members"></div>
+          </section>
+          <section class="activity-section">
+            <div class="panel-heading">
+              <span>LIVE CHANGES</span><span class="live-label">LIVE</span>
+            </div>
+            <p class="activity-hint">Recent workspace edits</p>
+            <div id="activity" class="activity-list">
+              <div class="empty-state">
+                No changes yet.<br />Edits from your team appear here.
+              </div>
+            </div>
+          </section>
+          <div class="collab-bottom">Shared edits · individual undo</div>
+        </aside>
+      </main>
+      <footer class="statusbar">
+        <div>
+          <span class="status-dot" id="status-dot"></span
+          ><span id="sync-status" role="status" aria-live="polite"
+            >Connecting</span
+          >
+        </div>
+        <span id="status-members">0 online</span
+        ><span class="status-end">Relay · Shared editing</span>
+      </footer>
+    </div>
+    <dialog id="connect-dialog" aria-label="Join workspace">
+      <form id="connect-form" novalidate>
+        <div class="dialog-top">
+          <span class="brand-mark">R</span
+          ><button
+            type="button"
+            class="icon-button close-dialog"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <h2>Open a shared workspace</h2>
+        <p>Join your team's workspace or create a new one.</p>
+        <label for="display-name">Your name</label
+        ><input
+          id="display-name"
+          autocomplete="nickname"
+          maxlength="40"
+          placeholder="e.g. Soumyanil"
+          aria-describedby="connect-error"
+        /><label for="invite-link"
+          >Workspace invite <span class="optional">optional</span></label
+        ><input
+          id="invite-link"
+          type="text"
+          placeholder="Paste a Relay invite link"
+          aria-describedby="connect-error"
+        />
+        <p class="field-help">
+          Leave the invite blank to open the local workspace.
+        </p>
+        <p id="connect-error" class="error" role="alert"></p>
+        <button type="submit" class="primary wide">Join workspace</button
+        ><button type="button" id="create-room" class="quiet wide">
+          Create a new workspace
+        </button>
+      </form>
+    </dialog>
+    <dialog id="file-dialog" aria-label="Create file">
+      <form id="file-form" novalidate>
+        <div class="dialog-top">
+          <h2>Create a file</h2>
+          <button
+            type="button"
+            class="icon-button close-dialog"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <label for="new-path">File path</label
+        ><input
+          id="new-path"
+          placeholder="src/utils.js"
+          maxlength="120"
+          aria-describedby="file-error"
+        />
+        <p id="file-error" class="error" role="alert"></p>
+        <button class="primary wide">Create file</button>
+      </form>
+    </dialog>
+    <dialog id="invite-dialog" aria-label="Invite teammate">
+      <div class="dialog-top">
+        <h2>Invite a teammate</h2>
+        <button class="icon-button close-dialog" aria-label="Close">×</button>
+      </div>
+      <p>Anyone with this invite can edit this workspace.</p>
+      <label for="share-link">Workspace invite</label
+      ><input id="share-link" readonly />
+      <p class="field-help">
+        Localhost links work on this computer. For other computers, host Relay
+        on a reachable server and use that server's address.
+      </p>
+      <button id="copy-invite" class="primary wide">Copy invite</button>
+      <p id="copy-status" role="status"></p>
+    </dialog>
+    <dialog
+      id="quick-dialog"
+      class="quick-dialog"
+      aria-label="Go to file or command"
+    >
+      <div class="quick-search">
+        <label class="sr-only" for="quick-query"
+          >Search files and commands</label
+        ><input
+          id="quick-query"
+          type="search"
+          placeholder="Search files or type > for commands"
+        /><button id="clear-quick" aria-label="Clear quick search" hidden>
+          ×</button
+        ><button class="close-dialog" aria-label="Close quick navigation">
+          Esc
+        </button>
+      </div>
+      <div id="quick-results"></div>
+      <p class="quick-help">Enter to open · Tab to navigate · Esc to close</p>
+    </dialog>
+    <dialog id="extension-dialog" aria-label="Extension compatibility">
+      <div class="dialog-top">
+        <h2>Extension compatibility</h2>
+        <button class="icon-button close-dialog" aria-label="Close">×</button>
+      </div>
+      <p>
+        Relay currently uses Monaco, the code editor component used by VS Code.
+        Monaco does not include VS Code's extension host.
+      </p>
+      <p>
+        Relay tools below run in this editor. Existing VS Code extensions need
+        an extension host and the VS Code API; they cannot be installed here
+        yet.
+      </p>
+      <p>
+        Full compatibility requires migrating to a VS Code-compatible workbench
+        and connecting live collaboration to its document system.
+      </p>
+    </dialog>
+    <dialog id="diff-dialog" class="diff-dialog" aria-labelledby="diff-title">
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">CHANGE REVIEW</span>
+          <h2 id="diff-title">File change</h2>
+          <p id="diff-meta"></p>
+        </div>
+        <button
+          class="icon-button close-dialog"
+          aria-label="Close change review"
+        >
+          ×
+        </button>
+      </div>
+      <div class="diff-labels"><span>Before</span><span>After</span></div>
+      <div id="diff-editor"></div>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

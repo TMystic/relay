@@ -1,0 +1,13 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": ["src"],
+  "locale": "en",
+  "canonicalMap": "UX-CONTRACT.md",
+  "requiredCapabilities": ["Form", "Scrollbar", "Toast", "CRUD"],
+  "requiredCommands": ["sync", "build"],
+  "commands": { "sync": "npm test", "build": "npm run build" },
+  "evidence": {
+    "crudFullFlow": "tests/sync.test.js",
+    "failurePaths": "tests/sync.test.js"
+  }
+}
