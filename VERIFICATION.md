@@ -24,3 +24,17 @@
 - No multi-computer LAN, internet-hosted, large-team, screen-reader, or native Windows installer testing was performed.
 
 This is a functional collaboration prototype with a desktop shell, not a production release.
+
+## Relay 0.2.0 — full desktop engine verification
+
+The desktop now includes official VSCodium 1.135.06055 with pinned SHA-256 verification, a real VS Code extension host, local folders and terminals. The earlier browser-specific limitations above describe historical versions.
+
+Verified on October 2, 2026:
+- All six protocol/storage/project-collection tests passed locally and on native Windows/Linux CI.
+- Real Linux editor extension-host checks passed: create a filesystem folder; native TextDocument changes reach another client; remote edits update the native document while retaining local edits; file creation with folders/spaces synchronizes; a terminal starts a local shell process; installed Prettier is visible in the extension host.
+- Windows installer and portable downloads built locally. Their packaged manifests, engine and bundled Relay VSIX were checked. The engine CLI successfully installed Relay and Prettier through Open VSX.
+- Public server reports version 0.2.0 and accepts workspace imports.
+
+Windows graphical runtime remains unverified in this restricted environment: launching the engine hits graphics/registry failures. Native Linux runtime checks pass. Full project execution depends on locally installed language runtimes. Compatible extensions use Open VSX/VSIX; Microsoft-only extension restrictions apply.
+
+Native build/check run: https://github.com/TMystic/relay/actions/runs/37042609246
