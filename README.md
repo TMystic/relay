@@ -8,6 +8,25 @@ Relay 0.2.0 runs the full **Code-OSS editor engine through VSCodium**, with Rela
 
 [Download](#download-and-install) · [Start collaborating](#your-first-shared-project) · [Run from source](#run-from-source) · [Build packages](#build-installers) · [Troubleshooting](#troubleshooting)
 
+## Beta testing — Relay Beta Tester 0.3.1-beta.1
+
+Try the new peer-first collaboration backend with optional encrypted Supabase recovery. These desktop binaries are a development snapshot built from the WSL workspace; the source and 0.2.0 instructions below describe the existing main branch.
+
+| Platform | Download |
+| --- | --- |
+| Windows x64 — portable | [Portable EXE](https://github.com/TMystic/relay/releases/download/beta-0.3.1/Relay-Beta-Tester-Portable-0.3.1-beta.1-x64.exe) |
+| Windows x64 — installer | [Setup EXE](https://github.com/TMystic/relay/releases/download/beta-0.3.1/Relay-Beta-Tester-Setup-0.3.1-beta.1-x64.exe) |
+| Linux x64 — standalone | [AppImage](https://github.com/TMystic/relay/releases/download/beta-0.3.1/Relay-Beta-Tester-0.3.1-beta.1-x86_64.AppImage) |
+| Ubuntu / Debian amd64 | [Debian package](https://github.com/TMystic/relay/releases/download/beta-0.3.1/Relay-Beta-Tester-0.3.1-beta.1-amd64.deb) |
+
+[Beta release](https://github.com/TMystic/relay/releases/tag/beta-0.3.1) · [Testing instructions](https://github.com/TMystic/relay/releases/download/beta-0.3.1/TESTING.md) · [SHA-256 checksums](https://github.com/TMystic/relay/releases/download/beta-0.3.1/SHA256SUMS) · [Verification manifest](https://github.com/TMystic/relay/releases/download/beta-0.3.1/manifest.json)
+
+Use a separate test project. The beta uses its own application identity/settings profile. Windows executables are unsigned. On Linux, make the AppImage executable; if FUSE is unavailable, run it with --appimage-extract-and-run, or install the .deb package.
+
+Test live edits on two devices, offline edits and reconnection, and late joining after the original author closes their device. Enable **Relay: Enable Encrypted Recovery** for cloud-fallback testing, have the workspace owner provision recovery, and use the updated invitation. Recovery uploads on local-save failure or when the current edit lacks peer acknowledgement at the 10-second check; wait for a confirmed save before closing the last device.
+
+The beta does not use the legacy browser companion or old HTTPS invitations. Full Windows UI and real-device network testing remain pending. [Report beta issues](https://github.com/TMystic/relay/issues/new) with the beta version, operating system, reproduction steps and logs with private invitations/credentials removed.
+
 ## What you can do
 
 | Feature | How it works |
