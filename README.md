@@ -8,24 +8,40 @@ Relay 0.2.0 runs the full **Code-OSS editor engine through VSCodium**, with Rela
 
 [Download](#download-and-install) · [Start collaborating](#your-first-shared-project) · [Run from source](#run-from-source) · [Build packages](#build-installers) · [Troubleshooting](#troubleshooting)
 
-## Beta testing — Relay Beta Tester 0.3.1-beta.1
+## Beta testing — Relay Beta Tester 0.4.0-beta.1
 
-Try the new peer-first collaboration backend with optional encrypted Supabase recovery. These desktop binaries are a development snapshot built from the WSL workspace; the source and 0.2.0 instructions below describe the existing main branch.
+Try code checks, a recoverable project timeline, and independent resumable file synchronization with optional encrypted cloud recovery. These desktop binaries are a development snapshot built from the WSL workspace; The source and 0.2.0 instructions below still describe the existing main branch.
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 — portable | [Portable EXE](https://github.com/TMystic/relay/releases/download/beta-0.3.1/Relay-Beta-Tester-Portable-0.3.1-beta.1-x64.exe) |
-| Windows x64 — installer | [Setup EXE](https://github.com/TMystic/relay/releases/download/beta-0.3.1/Relay-Beta-Tester-Setup-0.3.1-beta.1-x64.exe) |
-| Linux x64 — standalone | [AppImage](https://github.com/TMystic/relay/releases/download/beta-0.3.1/Relay-Beta-Tester-0.3.1-beta.1-x86_64.AppImage) |
-| Ubuntu / Debian amd64 | [Debian package](https://github.com/TMystic/relay/releases/download/beta-0.3.1/Relay-Beta-Tester-0.3.1-beta.1-amd64.deb) |
+| Windows x64 — portable | [Portable EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.0/Relay-Beta-Tester-Portable-0.4.0-beta.1-x64.exe) |
+| Windows x64 — installer | [Setup EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.0/Relay-Beta-Tester-Setup-0.4.0-beta.1-x64.exe) |
+| Linux x64 — standalone | [AppImage](https://github.com/TMystic/relay/releases/download/beta-0.4.0/Relay-Beta-Tester-0.4.0-beta.1-x86_64.AppImage) |
+| Ubuntu / Debian amd64 | [Debian package](https://github.com/TMystic/relay/releases/download/beta-0.4.0/Relay-Beta-Tester-0.4.0-beta.1-amd64.deb) |
 
-[Beta release](https://github.com/TMystic/relay/releases/tag/beta-0.3.1) · [Testing instructions](https://github.com/TMystic/relay/releases/download/beta-0.3.1/TESTING.md) · [SHA-256 checksums](https://github.com/TMystic/relay/releases/download/beta-0.3.1/SHA256SUMS) · [Verification manifest](https://github.com/TMystic/relay/releases/download/beta-0.3.1/manifest.json)
+[Beta release](https://github.com/TMystic/relay/releases/tag/beta-0.4.0)
+
 
 Use a separate test project. The beta uses its own application identity/settings profile. Windows executables are unsigned. On Linux, make the AppImage executable; if FUSE is unavailable, run it with --appimage-extract-and-run, or install the .deb package.
 
 Test live edits on two devices, offline edits and reconnection, and late joining after the original author closes their device. Enable **Relay: Enable Encrypted Recovery** for cloud-fallback testing, have the workspace owner provision recovery, and use the updated invitation. Recovery uploads on local-save failure or when the current edit lacks peer acknowledgement at the 10-second check; wait for a confirmed save before closing the last device.
 
 The beta does not use the legacy browser companion or old HTTPS invitations. Full Windows UI and real-device network testing remain pending. [Report beta issues](https://github.com/TMystic/relay/issues/new) with the beta version, operating system, reproduction steps and logs with private invitations/credentials removed.
+
+## What to test in this beta
+
+- **Code Checks:** recent edits by different teammates inside the same function produce a review warning when the language extension supplies document symbols. Existing language tools surface syntax/type errors; Relay lists newly observed errors after edits. These checks do not prove the code is logically correct.
+- **Review Suggested Repairs:** choose an error and a language extension's text-only quick fix, inspect the comparison, then explicitly apply it. Relay stops if the file changes while you review.
+- **Project Timeline:** save named checkpoints with Git branch/commit references, inspect full saved file versions, and use **Review Safe Restore** to undo a selected change. Unrelated newer text edits survive; overlapping changes stop for manual review. File creation/deletion and binary restores require an exact current-version match.
+- **Git:** create branches and commits through the editor's Git controls. **Open GitHub Pull Request** opens the current branch's comparison page; push and submit the reviewed pull request yourself.
+- **Choose Shared Files:** before creating an invite, select exclusion patterns and explicitly opt into binary sharing. Secrets, generated directories and symlinks stay excluded. Binary files transfer as whole-file replacements and do not merge as text.
+- **Transfers:** independent file documents, encrypted blocks and 128 KB resumable chunks replace whole-project downloads. Restart an interrupted receiver and verify it reuses saved chunks.
+- **Recovery:** the failure-only fallback publishes an encrypted multipart index last and keeps the preceding bank intact during an interrupted upload. It retains current project content; historical timeline versions remain local. Existing service quotas (64 slots, 128 MB per room) apply across devices and parts, so they can limit large-room cloud recovery. A refused save is reported.
+- **Compatibility:** existing rooms continue to use their original protocol. Start a separate new-format test room to exercise these features and issue new invitations to every tester.
+
+Measured locally in an isolated encrypted peer test: 2,000 files / 4,150,890 bytes initialized in approximately 0.9 seconds and first synchronized in approximately 51 seconds; one subsequent file edit transferred 500 bytes and arrived in approximately 69 ms. This is a local test, not a WAN or large-team performance guarantee. Windows interactive and separate-device testing remain for beta testers.
+
+Only the four beta executables are attached to this release. Implementation changes remain in the WSL workspace until beta testing is approved.
 
 ## What you can do
 
