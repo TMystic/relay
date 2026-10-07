@@ -8,18 +8,18 @@ Relay 0.2.0 runs the full **Code-OSS editor engine through VSCodium**, with Rela
 
 [Download](#download-and-install) · [Start collaborating](#your-first-shared-project) · [Run from source](#run-from-source) · [Build packages](#build-installers) · [Troubleshooting](#troubleshooting)
 
-## Beta testing — Relay Beta Tester 0.4.3-beta.1
+## Beta testing — Relay Beta Tester 0.4.4-beta.1
 
-Try code checks, a recoverable project timeline, and independent resumable file synchronization with optional encrypted cloud recovery. These desktop binaries are a development snapshot built from the WSL workspace; The source and 0.2.0 instructions below still describe the existing main branch.
+Try code checks, a recoverable project timeline, and independent resumable file synchronization with optional encrypted cloud recovery. These desktop binaries are a development snapshot built from the WSL workspace; the source and 0.2.0 instructions below still describe the existing main branch.
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 — portable | [Portable EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.3/Relay-Beta-Tester-Portable-0.4.3-beta.1-x64.exe) |
-| Windows x64 — installer | [Setup EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.3/Relay-Beta-Tester-Setup-0.4.3-beta.1-x64.exe) |
-| Linux x64 — standalone | [AppImage](https://github.com/TMystic/relay/releases/download/beta-0.4.3/Relay-Beta-Tester-0.4.3-beta.1-x86_64.AppImage) |
-| Ubuntu / Debian amd64 | [Debian package](https://github.com/TMystic/relay/releases/download/beta-0.4.3/Relay-Beta-Tester-0.4.3-beta.1-amd64.deb) |
+| Windows x64 — portable | [Portable EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.4/Relay-Beta-Tester-Portable-0.4.4-beta.1-x64.exe) |
+| Windows x64 — installer | [Setup EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.4/Relay-Beta-Tester-Setup-0.4.4-beta.1-x64.exe) |
+| Linux x64 — standalone | [AppImage](https://github.com/TMystic/relay/releases/download/beta-0.4.4/Relay-Beta-Tester-0.4.4-beta.1-x86_64.AppImage) |
+| Ubuntu / Debian amd64 | [Debian package](https://github.com/TMystic/relay/releases/download/beta-0.4.4/Relay-Beta-Tester-0.4.4-beta.1-amd64.deb) |
 
-[Beta release](https://github.com/TMystic/relay/releases/tag/beta-0.4.3)
+[Beta release](https://github.com/TMystic/relay/releases/tag/beta-0.4.4)
 
 
 Use a separate test project. The beta uses its own application identity/settings profile. Windows executables are unsigned. On Linux, make the AppImage executable; if FUSE is unavailable, run it with --appimage-extract-and-run, or install the .deb package.
@@ -30,9 +30,9 @@ The beta does not use the legacy browser companion or old HTTPS invitations. Ful
 
 ### Fixed in this beta
 
-This regression build fixes mixed-line-ending update echoes, final keystrokes missing from immediate checkpoints, restore review during pending local edits, edited-symlink isolation, stale file-transfer requests during concurrent changes, asynchronous receive ordering, exact binary size limits, and incoming writes to excluded local paths. It retains the previous rapid-typing and Live Changes fixes.
+This regression build fixes mixed-line-ending update echoes, final keystrokes missing from immediate checkpoints, restore review during pending local edits, edited-symlink isolation, stale file-transfer requests during concurrent changes, asynchronous receive ordering, exact binary size limits, and incoming writes to excluded local paths. It also refreshes shared character identities after visually identical rewrites so the next local replacement cannot retain old text. Verified files stay editable while new files download; large outgoing changes wait for a complete project offer. It retains the previous rapid-typing and Live Changes fixes.
 
-Verified with 41 automated scenarios, 25 installed native-editor checks, 6,000 randomized editing operations, a six-peer editing burst, a 2,000-file project, live encrypted recovery, and packaged Windows/Linux runtime checks. These are beta results; interactive Windows installation, physical-device internet testing, sustained sessions, and independent security review remain release gates.
+Verified with 43 automated scenarios, 28 installed native-editor checks, 6,000 randomized editing operations, a six-peer editing burst, a 2,000-file project, live encrypted recovery, and packaged Windows/Linux runtime checks. These are beta results; interactive Windows installation, physical-device internet testing, sustained sessions, triage of an observed local Relay/WSL editor abort, and independent security review remain release gates.
 
 ## What to test in this beta
 
