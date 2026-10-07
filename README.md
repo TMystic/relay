@@ -8,18 +8,18 @@ Relay 0.2.0 runs the full **Code-OSS editor engine through VSCodium**, with Rela
 
 [Download](#download-and-install) · [Start collaborating](#your-first-shared-project) · [Run from source](#run-from-source) · [Build packages](#build-installers) · [Troubleshooting](#troubleshooting)
 
-## Beta testing — Relay Beta Tester 0.4.2-beta.1
+## Beta testing — Relay Beta Tester 0.4.3-beta.1
 
 Try code checks, a recoverable project timeline, and independent resumable file synchronization with optional encrypted cloud recovery. These desktop binaries are a development snapshot built from the WSL workspace; The source and 0.2.0 instructions below still describe the existing main branch.
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 — portable | [Portable EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.2/Relay-Beta-Tester-Portable-0.4.2-beta.1-x64.exe) |
-| Windows x64 — installer | [Setup EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.2/Relay-Beta-Tester-Setup-0.4.2-beta.1-x64.exe) |
-| Linux x64 — standalone | [AppImage](https://github.com/TMystic/relay/releases/download/beta-0.4.2/Relay-Beta-Tester-0.4.2-beta.1-x86_64.AppImage) |
-| Ubuntu / Debian amd64 | [Debian package](https://github.com/TMystic/relay/releases/download/beta-0.4.2/Relay-Beta-Tester-0.4.2-beta.1-amd64.deb) |
+| Windows x64 — portable | [Portable EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.3/Relay-Beta-Tester-Portable-0.4.3-beta.1-x64.exe) |
+| Windows x64 — installer | [Setup EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.3/Relay-Beta-Tester-Setup-0.4.3-beta.1-x64.exe) |
+| Linux x64 — standalone | [AppImage](https://github.com/TMystic/relay/releases/download/beta-0.4.3/Relay-Beta-Tester-0.4.3-beta.1-x86_64.AppImage) |
+| Ubuntu / Debian amd64 | [Debian package](https://github.com/TMystic/relay/releases/download/beta-0.4.3/Relay-Beta-Tester-0.4.3-beta.1-amd64.deb) |
 
-[Beta release](https://github.com/TMystic/relay/releases/tag/beta-0.4.2)
+[Beta release](https://github.com/TMystic/relay/releases/tag/beta-0.4.3)
 
 
 Use a separate test project. The beta uses its own application identity/settings profile. Windows executables are unsigned. On Linux, make the AppImage executable; if FUSE is unavailable, run it with --appimage-extract-and-run, or install the .deb package.
@@ -30,9 +30,9 @@ The beta does not use the legacy browser companion or old HTTPS invitations. Ful
 
 ### Fixed in this beta
 
-Rapid typing now preserves local keystrokes while teammate edits arrive. Relay retains the CRDT identities of editor text, coalesces changes in fixed 32 ms windows, and retries incoming edits when the document version changes. Continuous typing does not wait for a pause. Save, document close, and session shutdown flush pending edits. Mirror work targets changed files. Delayed notifications from Relay disk writes cannot revert newer shared changes.
+This regression build fixes mixed-line-ending update echoes, final keystrokes missing from immediate checkpoints, restore review during pending local edits, edited-symlink isolation, stale file-transfer requests during concurrent changes, asynchronous receive ordering, exact binary size limits, and incoming writes to excluded local paths. It retains the previous rapid-typing and Live Changes fixes.
 
-Verified with native typing, backspace, paste, multi-cursor edits and simultaneous teammate changes, including a rejected stale editor update. Both current and original peer protocols retain their formats. Live Changes counts and the previous binary, sharing-limit, timeline and diagnostic fixes remain included.
+Verified with 41 automated scenarios, 25 installed native-editor checks, 6,000 randomized editing operations, a six-peer editing burst, a 2,000-file project, live encrypted recovery, and packaged Windows/Linux runtime checks. These are beta results; interactive Windows installation, physical-device internet testing, sustained sessions, and independent security review remain release gates.
 
 ## What to test in this beta
 
