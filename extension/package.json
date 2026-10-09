@@ -1,45 +1,184 @@
 {
   "name": "relay-collaboration",
   "displayName": "Relay Collaboration",
-  "description": "Open a project, use real extensions and terminals, and share source edits live with your team.",
-  "version": "0.2.0",
+  "description": "Encrypted peer collaboration with local replicas and optional encrypted Supabase recovery.",
+  "version": "0.4.5",
   "publisher": "TMystic",
   "license": "MIT",
-  "engines": { "vscode": "^1.100.0" },
-  "categories": ["Other"],
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
   "main": "./dist/extension.cjs",
-  "activationEvents": ["onStartupFinished"],
-  "extensionKind": ["workspace"],
-  "capabilities": { "untrustedWorkspaces": { "supported": false }, "virtualWorkspaces": false },
-  "repository": { "type": "git", "url": "https://github.com/TMystic/relay" },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": false
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TMystic/relay"
+  },
   "contributes": {
     "commands": [
-      { "command": "relay.openFolder", "title": "Relay: Open Project Folder", "icon": "$(folder-opened)" },
-      { "command": "relay.createFolder", "title": "Relay: Create Project Folder", "icon": "$(new-folder)" },
-      { "command": "relay.invite", "title": "Relay: Invite Teammate", "icon": "$(link)" },
-      { "command": "relay.join", "title": "Relay: Join Shared Workspace", "icon": "$(organization)" },
-      { "command": "relay.disconnect", "title": "Relay: Disconnect Collaboration", "icon": "$(debug-disconnect)" },
-      { "command": "relay.terminal", "title": "Relay: Open Terminal", "icon": "$(terminal)" },
-      { "command": "relay.extensions", "title": "Relay: Browse Extensions", "icon": "$(extensions)" },
-      { "command": "relay.importLegacy", "title": "Relay: Import Previous Relay Workspace", "icon": "$(cloud-download)" },
-      { "command": "relay.review", "title": "Relay: Review Change" }
+      {
+        "command": "relay.openFolder",
+        "title": "Relay: Open Project Folder",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "relay.createFolder",
+        "title": "Relay: Create Project Folder",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "relay.invite",
+        "title": "Relay: Invite Teammate",
+        "icon": "$(link)"
+      },
+      {
+        "command": "relay.join",
+        "title": "Relay: Join Shared Workspace",
+        "icon": "$(organization)"
+      },
+      {
+        "command": "relay.disconnect",
+        "title": "Relay: Disconnect Collaboration",
+        "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "relay.terminal",
+        "title": "Relay: Open Terminal",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "relay.extensions",
+        "title": "Relay: Browse Extensions",
+        "icon": "$(extensions)"
+      },
+      {
+        "command": "relay.importLegacy",
+        "title": "Relay: Import Previous Relay Workspace",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "relay.review",
+        "title": "Relay: Review Change"
+      },
+      {
+        "command": "relay.migratePeers",
+        "title": "Relay: Migrate to Peer Workspace"
+      },
+      {
+        "command": "relay.enableRecovery",
+        "title": "Relay: Enable Encrypted Recovery"
+      },
+      {
+        "command": "relay.disableRecovery",
+        "title": "Relay: Disable Cloud Fallback"
+      },
+      {
+        "command": "relay.sharing",
+        "title": "Relay: Choose Shared Files"
+      },
+      {
+        "command": "relay.checkpoint",
+        "title": "Relay: Save Project Checkpoint"
+      },
+      {
+        "command": "relay.inspectCheckpoint",
+        "title": "Relay: Inspect Project Checkpoint"
+      },
+      {
+        "command": "relay.restore",
+        "title": "Relay: Review Safe Restore"
+      },
+      {
+        "command": "relay.repairs",
+        "title": "Relay: Review Suggested Repairs"
+      },
+      {
+        "command": "relay.gitBranch",
+        "title": "Relay: Create Git Branch"
+      },
+      {
+        "command": "relay.gitCommit",
+        "title": "Relay: Commit with Git"
+      },
+      {
+        "command": "relay.pullRequest",
+        "title": "Relay: Open GitHub Pull Request"
+      }
     ],
-    "viewsContainers": { "activitybar": [{ "id": "relay", "title": "Relay", "icon": "media/relay.svg" }] },
-    "views": { "relay": [{ "id": "relay.team", "name": "Team" }, { "id": "relay.changes", "name": "Live Changes" }] },
-    "viewsWelcome": [{ "view": "relay.team", "contents": "Build together in a real project folder.\n[Open Folder](command:relay.openFolder)\n[Create Folder](command:relay.createFolder)\n[Invite Teammate](command:relay.invite)\n[Join Workspace](command:relay.join)\n[Open Terminal](command:relay.terminal)\n[Browse Extensions](command:relay.extensions)\n[Import previous Relay workspace](command:relay.importLegacy)", "when": "!relay.connected" }],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "relay",
+          "title": "Relay",
+          "icon": "media/relay.svg"
+        }
+      ]
+    },
+    "views": {
+      "relay": [
+        {
+          "id": "relay.team",
+          "name": "Team"
+        },
+        {
+          "id": "relay.changes",
+          "name": "Live Changes"
+        },
+        {
+          "id": "relay.timeline",
+          "name": "Project Timeline"
+        },
+        {
+          "id": "relay.codeChecks",
+          "name": "Code Checks"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "relay.team",
+        "contents": "Build together in a real project folder.\n[Open Folder](command:relay.openFolder)\n[Create Folder](command:relay.createFolder)\n[Invite Teammate](command:relay.invite)\n[Join Workspace](command:relay.join)\n[Open Terminal](command:relay.terminal)\n[Browse Extensions](command:relay.extensions)\n[Import previous Relay workspace](command:relay.importLegacy)",
+        "when": "!relay.connected"
+      }
+    ],
     "menus": {
       "view/title": [
-        { "command": "relay.invite", "when": "view == relay.team", "group": "navigation" },
-        { "command": "relay.join", "when": "view == relay.team", "group": "navigation" },
-        { "command": "relay.disconnect", "when": "view == relay.team && relay.connected", "group": "navigation" }
+        {
+          "command": "relay.invite",
+          "when": "view == relay.team",
+          "group": "navigation"
+        },
+        {
+          "command": "relay.join",
+          "when": "view == relay.team",
+          "group": "navigation"
+        },
+        {
+          "command": "relay.disconnect",
+          "when": "view == relay.team && relay.connected",
+          "group": "navigation"
+        }
       ],
-      "commandPalette": [{ "command": "relay.review", "when": "false" }]
-    },
-    "configuration": {
-      "title": "Relay",
-      "properties": {
-        "relay.serverUrl": { "type": "string", "default": "https://relay-bf93.onrender.com", "description": "Public Relay server for creating team workspaces." }
-      }
+      "commandPalette": [
+        {
+          "command": "relay.review",
+          "when": "false"
+        }
+      ]
     }
   }
 }

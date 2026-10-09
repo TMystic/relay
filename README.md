@@ -1,25 +1,21 @@
-# Relay
+# Relay 0.4.5 â€” code-aware peer collaboration
 
-**A desktop coding editor where your teammates’ changes reach you live.**
+A desktop editor built on VSCodium/Code-OSS. Edits travel between teammates over encrypted peer connections. Local encrypted checkpoints and peer replicas are primary. Optional Supabase recovery stores end-to-end encrypted copies only when local saving or peer replication fails.
 
-Open a project, invite your team, and work together in the same source files. When someone fixes a bug, connected teammates receive the change without waiting for a Git push and pull. Relay’s activity feed shows who changed a file and lets you review its before-and-after contents.
+This is a development version. Existing 0.2 installers remain unchanged in the verified rollback backup and do not contain these changes.
 
-Relay 0.2.0 runs the full **Code-OSS editor engine through VSCodium**, with Relay collaboration built in as a native extension.
+## Beta testing â€” Relay Beta Tester 0.4.5-beta.1
 
-[Download](#download-and-install) · [Start collaborating](#your-first-shared-project) · [Run from source](#run-from-source) · [Build packages](#build-installers) · [Troubleshooting](#troubleshooting)
-
-## Beta testing — Relay Beta Tester 0.4.4-beta.1
-
-Try code checks, a recoverable project timeline, and independent resumable file synchronization with optional encrypted cloud recovery. These desktop binaries are a development snapshot built from the WSL workspace; the source and 0.2.0 instructions below still describe the existing main branch.
+Try code checks, a recoverable project timeline, and independent resumable file synchronization with optional encrypted cloud recovery. The Windows and Linux beta packages are built from the source published in this repository.
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 — portable | [Portable EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.4/Relay-Beta-Tester-Portable-0.4.4-beta.1-x64.exe) |
-| Windows x64 — installer | [Setup EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.4/Relay-Beta-Tester-Setup-0.4.4-beta.1-x64.exe) |
-| Linux x64 — standalone | [AppImage](https://github.com/TMystic/relay/releases/download/beta-0.4.4/Relay-Beta-Tester-0.4.4-beta.1-x86_64.AppImage) |
-| Ubuntu / Debian amd64 | [Debian package](https://github.com/TMystic/relay/releases/download/beta-0.4.4/Relay-Beta-Tester-0.4.4-beta.1-amd64.deb) |
+| Windows x64 â€” portable | [Portable EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.5/Relay-Beta-Tester-Portable-0.4.5-beta.1-x64.exe) |
+| Windows x64 â€” installer | [Setup EXE](https://github.com/TMystic/relay/releases/download/beta-0.4.5/Relay-Beta-Tester-Setup-0.4.5-beta.1-x64.exe) |
+| Linux x64 â€” standalone | [AppImage](https://github.com/TMystic/relay/releases/download/beta-0.4.5/Relay-Beta-Tester-0.4.5-beta.1-x86_64.AppImage) |
+| Ubuntu / Debian amd64 | [Debian package](https://github.com/TMystic/relay/releases/download/beta-0.4.5/Relay-Beta-Tester-0.4.5-beta.1-amd64.deb) |
 
-[Beta release](https://github.com/TMystic/relay/releases/tag/beta-0.4.4)
+[Beta release](https://github.com/TMystic/relay/releases/tag/beta-0.4.5)
 
 
 Use a separate test project. The beta uses its own application identity/settings profile. Windows executables are unsigned. On Linux, make the AppImage executable; if FUSE is unavailable, run it with --appimage-extract-and-run, or install the .deb package.
@@ -28,15 +24,17 @@ Test live edits on two devices, offline edits and reconnection, and late joining
 
 The beta does not use the legacy browser companion or old HTTPS invitations. Full Windows UI and real-device network testing remain pending. [Report beta issues](https://github.com/TMystic/relay/issues/new) with the beta version, operating system, reproduction steps and logs with private invitations/credentials removed.
 
-### Fixed in this beta
+### Changed in this beta
 
-This regression build fixes mixed-line-ending update echoes, final keystrokes missing from immediate checkpoints, restore review during pending local edits, edited-symlink isolation, stale file-transfer requests during concurrent changes, asynchronous receive ordering, exact binary size limits, and incoming writes to excluded local paths. It also refreshes shared character identities after visually identical rewrites so the next local replacement cannot retain old text. Verified files stay editable while new files download; large outgoing changes wait for a complete project offer. It retains the previous rapid-typing and Live Changes fixes.
+- **Code Checks focuses on collaboration:** teammate function changes and overlapping edits appear here. Ordinary compiler errors stay in the editor's Problems panel. If a language extension cannot identify functions, Relay shows a teammate file-change notice instead.
+- **External tool changes refresh without restart:** edits made on disk by tools such as OpenCode now merge into dirty editor buffers and reach teammates. Concurrent unsaved typing is preserved; changes without reliable saved ancestry require review rather than overwriting either copy.
+- **Safer incoming writes:** text and binary updates use exclusive atomic temporary files, preserve supported file permissions, and retain the previous contents if a durable write fails. Pre-existing temporary symlinks and outside hard-link aliases cannot redirect incoming writes.
 
-Verified with 43 automated scenarios, 28 installed native-editor checks, 6,000 randomized editing operations, a six-peer editing burst, a 2,000-file project, live encrypted recovery, and packaged Windows/Linux runtime checks. These are beta results; interactive Windows installation, physical-device internet testing, sustained sessions, triage of an observed local Relay/WSL editor abort, and independent security review remain release gates.
+Verified with 54 automated scenarios, 33 installed native-editor checks in an isolated Linux editor, and a dependency audit with zero known vulnerabilities. The previous rapid-typing, Live Changes, offline merge, timeline, selective-sharing and resumable-transfer fixes are retained. Final installer payload and Windows/Linux runtime checks are recorded in [VERIFICATION.md](VERIFICATION.md). Interactive Windows installation and separate-device internet testing remain beta release gates.
 
 ## What to test in this beta
 
-- **Code Checks:** recent edits by different teammates inside the same function produce a review warning when the language extension supplies document symbols. Existing language tools surface syntax/type errors; Relay lists newly observed errors after edits. These checks do not prove the code is logically correct.
+- **Code Checks:** teammate function changes appear as review notices; recent edits by different actors inside the same function produce an overlap warning when the language extension supplies document symbols. Without symbols, teammate file changes are shown. Ordinary syntax/type errors remain in Problems and are not listed here. These notices do not prove the code is logically correct.
 - **Review Suggested Repairs:** choose an error and a language extension's text-only quick fix, inspect the comparison, then explicitly apply it. Relay stops if the file changes while you review.
 - **Project Timeline:** save named checkpoints with Git branch/commit references, inspect full saved file versions, and use **Review Safe Restore** to undo a selected change. Unrelated newer text edits survive; overlapping changes stop for manual review. File creation/deletion and binary restores require an exact current-version match.
 - **Git:** create branches and commits through the editor's Git controls. **Open GitHub Pull Request** opens the current branch's comparison page; push and submit the reviewed pull request yourself.
@@ -47,222 +45,83 @@ Verified with 43 automated scenarios, 28 installed native-editor checks, 6,000 r
 
 Measured locally in an isolated encrypted peer test: 2,000 files / 4,150,890 bytes initialized in approximately 0.9 seconds and first synchronized in approximately 51 seconds; one subsequent file edit transferred 500 bytes and arrived in approximately 69 ms. This is a local test, not a WAN or large-team performance guarantee. Windows interactive and separate-device testing remain for beta testers.
 
-Only the four beta executables are attached to this release. Implementation changes remain in the WSL workspace until beta testing is approved.
+Only the four Windows/Linux beta packages are attached to this release. The matching implementation source is now published in this repository.
 
-## What you can do
+## Run from WSL
 
-| Feature | How it works |
-| --- | --- |
-| Real project folders | Open existing code or create a new folder, then work in the native Explorer. |
-| Live collaboration | Source edits merge through Yjs and WebSockets, with cached offline changes and reconnection. |
-| Team presence | See connected teammates and the files they are viewing. |
-| Change review | Open read-only before-and-after comparisons from Live Changes. |
-| Integrated terminal | Run a local shell in your project folder. |
-| Extensions | Install compatible extensions from Open VSX or a local VSIX package. |
-| Git tools | Use the engine’s Git interface with Git installed locally. |
-| Browser companion | Teammates can open an invite in a browser; desktop users get the full editor engine. |
-| Previous workspaces | Import saved classic Relay workspaces into real folders. |
+Use Linux Node.js 22.12+ and npm in this folder, not Windows npm against WSL.
 
-Live synchronization handles shared working files. Git remains useful for commits, branches, backups, and releasing your project.
-
-## Download and install
-
-You do **not** need Node.js to use a packaged desktop download.
-
-The verified **0.2.0** packages are available from this [successful build](https://github.com/TMystic/relay/actions/runs/37042609246):
-
-| Platform | Download | Files inside the ZIP |
-| --- | --- | --- |
-| Windows x64 | [Windows packages](https://github.com/TMystic/relay/actions/runs/37042609246/artifacts/11243430314) | `Relay-Setup-0.2.0-x64.exe` and `Relay-Portable-0.2.0-x64.exe` |
-| Debian / Ubuntu amd64 | [Linux package](https://github.com/TMystic/relay/actions/runs/37042609246/artifacts/11242854601) | `Relay-0.2.0-amd64.deb` |
-
-GitHub Actions artifact downloads require signing in to GitHub. These artifacts are retained for 30 days, through approximately **November 1, 2026**. If a link has expired, open [Actions](https://github.com/TMystic/relay/actions), select a newer successful **Build downloadable packages** run, and download its matching artifact—or build from source below.
-
-### Windows
-
-1. Download and extract the Windows ZIP.
-2. Open `Relay-Setup-0.2.0-x64.exe`.
-3. Choose the installation location and complete the installer.
-4. Launch **Relay** from the Start menu or desktop shortcut.
-
-Choose the **installer** for a regular installed app with shortcuts and an uninstall entry. Choose `Relay-Portable-0.2.0-x64.exe` to launch without running the installer; editor settings and workspace state still use local user storage.
-
-Relay’s Windows packages are unsigned, so Windows may show an unrecognized-app warning.
-
-### Debian / Ubuntu
-
-Download and extract the Linux ZIP. From the folder containing the package, run:
-
-```bash
-sudo apt install ./Relay-0.2.0-amd64.deb
-```
-
-Then open **Relay** from Applications, or run:
-
-```bash
-relay
-```
-
-Use a graphical Linux desktop or WSLg. Language tools such as Python, Node.js, compilers, and Git are installed separately on your computer.
-
-### Upgrade from an older Relay version
-
-Close Relay before installing the new package. Version 0.2.0 opens the full editor interface. To bring in code saved in the older desktop workbench, open the Command Palette and run **Relay: Import Previous Relay Workspace**, then select an empty destination folder. The original workspace data is retained.
-
-Desktop updates currently use a new installer; automatic updates are not implemented.
-
-## Your first shared project
-
-### Create or open a project
-
-1. Launch Relay.
-2. Select **File → Open Folder** for an existing project.
-3. For a new project, open the **Relay** sidebar and click **Create Folder**, or run **Relay: Create Project Folder** from the Command Palette.
-4. Create and edit files through the Explorer.
-
-The Command Palette opens with **Ctrl+Shift+P**. Relay commands begin with `Relay:`.
-
-### Invite teammates
-
-1. Open the project folder you want to share.
-2. In the Relay sidebar, click **Invite Teammate**, or run **Relay: Invite Teammate**.
-3. Enter your display name.
-4. Review and accept the source-file sharing prompt.
-5. Send the copied invite link to your teammates.
-
-The default collaboration service is [relay-bf93.onrender.com](https://relay-bf93.onrender.com). Teammates can connect from different networks. Its free hosting may take about a minute to wake after being idle.
-
-### Join a shared project
-
-**Desktop:** run **Relay: Join Shared Workspace**, paste the complete invite, enter your name, and choose an **empty local folder**. Relay opens that folder and downloads the shared source into it.
-
-**Browser:** open the invite link and enter your name. The browser companion provides the earlier collaborative workbench; local folders, native extensions, and the terminal belong to the desktop app.
-
-Open the same file on two clients and edit it. Changes should reach both clients without a manual refresh. Use **Team** for presence and **Live Changes** to review edits.
-
-### Run code and add extensions
-
-- **Terminal → New Terminal** opens a shell in the project folder. You can also run **Relay: Open Terminal**.
-- **Ctrl+Shift+X** opens Extensions. Search Open VSX and choose **Install**.
-- For a compatible downloaded extension, run **Extensions: Install from VSIX**.
-- Install the project’s language runtimes and dependencies locally before running it.
-
-Terminals and installed extensions are local to each computer. Collaboration does not let teammates execute commands in another person’s terminal.
-
-## Sharing limits and storage
-
-The current collaboration preview supports **1,000 source files**, **1 MB of UTF-8 text in total**, and **512 KB per file**. Dependency and generated directories, Git/editor metadata, environment files, binary files, and symlinks are excluded from source sharing.
-
-Invite links are bearer credentials: **anyone holding an invite can edit that workspace**. Display names are self-declared. Verified accounts, roles, and invite revocation are not implemented.
-
-Invites use the editor’s SecretStorage API. Cached collaboration state is stored in the extension’s local storage, and saved projects reconnect when reopened. The hosted service uses durable workspace storage. Shared file deletions use the local trash when the file provider supports it.
-
-Keep normal project backups and Git history. This is a collaboration preview, with no unlimited-team or large-project guarantee.
-
-## Extension compatibility
-
-Relay uses the real VS Code extension API through its Code-OSS engine. It supports **compatible Open VSX and VSIX extensions**, including third-party extensions verified in the native engine.
-
-Not every VS Code extension is available or compatible. Microsoft Marketplace access and some proprietary Microsoft extensions are restricted to Microsoft’s products. Extension API versions, dependencies, platform support, and required language tools still apply.
-
-See the [VSCodium documentation](https://vscodium.com/) and [Microsoft FAQ](https://code.visualstudio.com/Docs/supporting/faq) for upstream details.
-
-## Run from source
-
-Requires **Git**, **Node.js 22**, npm, an internet connection for the initial engine download, and a graphical desktop.
-
-```bash
-git clone https://github.com/TMystic/relay.git
-cd relay
+~~~bash
 npm ci
 npm start
-```
+~~~
 
-The first desktop build downloads the pinned official VSCodium engine, verifies its SHA-256 checksum, and bundles the Relay extension. Later starts reuse the prepared engine.
+Desktop startup requires WSLg or a graphical Linux desktop. The first desktop build downloads the checksum-pinned VSCodium engine.
 
-To update an existing checkout:
+Open/create a project folder, choose Relay: Invite Teammate, and share the complete private relay://workspace-v2/â€¦#key=â€¦ invitation. Existing workspace invitations remain compatible with their original protocol; use Relay: Migrate to Peer Workspace to create a new-format room while retaining the old cache. Teammates choose Relay: Join Shared Workspace and an empty folder.
 
-```bash
-git pull
-npm ci
-npm start
-```
+To migrate an existing local cloud workspace, run Relay: Migrate to Peer Workspace. This creates a new invite from local source and does not delete old cloud data. Download newer cloud-only source using the old app before migration. Old HTTPS invites are not automatically connected.
 
-Install dependencies separately on Windows and Linux; do not copy `node_modules` between operating systems.
+## Late joining and availability
 
-### Browser companion
+Every initialized peer stores a local replica. A late joiner can receive the latest edits from any online peer that received them, even after the original author leaves.
 
-```bash
-npm run build
-npm run server
-```
+Without cloud recovery, if every device holding an edit is powered off, that edit becomes available only when one returns. With recovery enabled, a joiner can recover the last successfully uploaded copy. The status bar distinguishes local saves from copies acknowledged by peers. An acknowledgement means receipt at that time, not a promise that a peer stays online.
 
-Open **http://localhost:4317**. This starts the local browser/server companion, rather than the full desktop editor. A localhost invite is reachable only on the hosting computer.
+Keep a trusted local device seeding without the editor:
 
-To open the classic desktop workbench:
+~~~bash
+npm run seed -- /path/to/private-replica
+~~~
 
-```bash
-npm run start:classic
-```
+Paste the invite at the first-use prompt. The process keeps an encrypted local replica available while running; it does not start an HTTP project-storage service. Its directory also stores the private invitation and must remain private. Stopping the process or device makes its copy unavailable.
 
-For server configuration and hosting, see [HOSTING.md](HOSTING.md). The desktop server address is configurable through the `relay.serverUrl` setting. Keep private storage credentials on the server.
+## Security and limits
 
-## Build installers
+Noise encrypts peer streams; an invite-capability proof bound to the encrypted handshake gates project access. Random 256-bit invite secrets derive discovery topics. Local CRDT caches use authenticated encryption, atomic replacement, and a disk flush before acknowledging changes.
 
-Build each package on its target operating system after `npm ci`:
+Shared paths are confined to the project. Credential files/directories, metadata, dependencies, generated folders, symlinks, and Windows reserved names are excluded. Incoming state, message sizes/rates, and Windows filename collisions are validated.
 
-| Platform | Command | Output |
-| --- | --- | --- |
-| Windows x64 | `npm run package:win` | Installer and portable executables in `release/` |
-| Debian / Ubuntu amd64 | `npm run package:linux` | Debian package in `release/` |
+New beta workspaces: 10,000 files, 16 MB current content, 2 MB per text/binary file, 8 MB history per file and 32 MB aggregate CRDT history. Existing invites retain the previous 1 MB protocol. Terminal commands remain local. Production Workspace Trust stays enabled.
 
-The [packaging workflow](.github/workflows/packages.yml) builds both platforms on pushes to `main` and can be started manually through Actions. Version tags matching `package.json`, such as `v0.2.0`, create a **draft** release with package attachments after successful builds.
+Anyone with an invite is a writer. Names are self-declared. New workspaces retain up to 200 complete local change versions and 20 named checkpoints, bounded to 128 MB of historical blocks; oldest versions expire when the bound is reached. Existing workspaces retain preview history. These are not verified audit evidence. To rotate a leaked invite, create a new workspace and invite trusted teammates again; previously downloaded copies cannot be erased.
 
-Engine binaries, generated packages, dependencies, and private workspace data are excluded from Git. Source builds reproduce the downloads without checking large runtime binaries into the repository.
+Project files on disk remain plaintext. Cache encryption is not full-disk encryption. DHT participants see network addresses and discovery metadata. Restrictive networks can prevent connections; zero external network infrastructure, unlimited teams, and always-online availability are not promised.
 
-## Verification
+See [PEER-ARCHITECTURE.md](PEER-ARCHITECTURE.md) and [RECOVERY.md](RECOVERY.md).
 
-```bash
+## Enable the fallback
+
+Run Relay: Enable Encrypted Recovery after inviting/joining a workspace. Enter the deployed Supabase recovery URL and the owner setup code when provisioning a new room. Share the updated invitation with teammates; previous peer-only invitations remain peer-only until explicitly enabled. The setup code never goes into invitations or packaged executables.
+
+Healthy, acknowledged peers do not trigger project uploads. Each session checks for previous cloud recovery copies on startup, then checks again when fallback is needed. If the newest edit has no peer acknowledgement after the 10-second fallback check, Relay uploads an encrypted recovery snapshot. Local checkpoint failures trigger an immediate attempt. Cloud saves can take time; read the status bar before closing a device.
+
+Failure-only recovery cannot recover edits that never reached any durable copy. If local storage, peers, and cloud all fail, keep the editor open until a save is confirmed.
+
+## Verify and package
+
+~~~bash
 npm test
 npm run build:desktop
 npm run test:engine
-```
+npm run package:linux
+~~~
 
-On a headless Linux machine, use `xvfb-run -a npm run test:engine` with the engine’s sandbox configured as shown in the packaging workflow.
+A headless Linux environment needs Xvfb. Final Windows verification requires Windows Node.js and a Windows checkout:
 
-The [verified build](https://github.com/TMystic/relay/actions/runs/37042609246) passed Windows and Linux packaging, protocol/storage tests, and real Linux extension-host checks for folder creation, edits in both directions, file watching, a terminal shell process, and a third-party extension.
+~~~powershell
+npm ci
+npm run package:win
+~~~
 
-See [VERIFICATION.md](VERIFICATION.md) for test evidence and environment limits. Native Windows graphical launch could not be tested in the build environment; desktop operation was subsequently reported working by the project owner.
+Peer networking includes native dependencies. Build each platform with its own dependency installation; do not reuse Linux node_modules on Windows.
 
-## Troubleshooting
+Open VSX and compatible VSIX extensions remain supported. Some Microsoft-exclusive extensions have restrictions.
 
-| Symptom | What to check |
-| --- | --- |
-| Connecting takes a while | Allow the free hosted server time to wake. Check your connection and the full invite link. |
-| An invite contains `127.0.0.1` or `localhost` | That address points to the recipient’s own computer. Use the public invite created by the current desktop Relay extension for internet collaboration. |
-| Join refuses a folder | Choose an empty destination folder. Open an existing project with **File → Open Folder** instead. |
-| Relay commands are unavailable | Check Workspace Trust and that **Relay Collaboration** is enabled. Trust projects you recognize. |
-| An extension cannot be found | Search Open VSX, or install a compatible VSIX. Microsoft-only extensions may be unavailable. |
-| A terminal command is missing | Install its runtime/tool locally; Relay provides the shell, not every compiler or interpreter. |
-| Files are missing from the shared project | Check the source-sharing exclusions and size limits. Dependencies and binary files are not shared. |
-| An old workspace does not appear | Run **Relay: Import Previous Relay Workspace** from the desktop app. |
+## Rollback
 
-## Repository map
+Verified backup: .backups/20261003T065836Z/. It contains source plus Git history, eight existing installer/package files, and a checksum manifest. Extract its source archive into a separate folder; preserve current work before restoring.
 
-```text
-electron/       Desktop launcher and classic shell
-extension/      Native Relay collaboration extension and engine tests
-scripts/        Engine download, VSIX bundling, and native verification
-server/         Room protocol, persistence, and invite publishing
-src/            Browser companion interface
-tests/          Collaboration, storage, and project-file tests
-.github/        Windows/Linux packaging workflow
-```
+The old deployment was not remotely changed. Cloud code and deployment configuration now live under legacy/. Explicit npm run server:legacy uses the former cloud architecture. It is not shipped in the 0.3 desktop package. The browser companion is legacy and cannot join native peer invites.
 
-## Project status and licenses
-
-Relay is a working collaboration preview. Accounts and role permissions, invite revocation, automatic desktop updates, and large-team load guarantees remain future work.
-
-The editor engine comes from [VSCodium](https://vscodium.com/), built from Microsoft’s Code-OSS sources. Upstream licenses and notices are retained in the bundled runtime. The [Relay Collaboration extension](extension/LICENSE) is MIT-licensed with dependency notices. The root application currently declares `UNLICENSED`; do not assume the entire repository has the extension’s MIT license.
-
-For more details, read [FULL-EDITOR.md](FULL-EDITOR.md), [HOSTING.md](HOSTING.md), and [VERIFICATION.md](VERIFICATION.md).
+Existing Relay/upstream licensing remains applicable. The collaboration extension is MIT-licensed. Peer dependency packages retain their notices in the VSIX.

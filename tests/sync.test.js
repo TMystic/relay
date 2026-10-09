@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { WebSocket } from "ws";
 import * as Y from "yjs";
-import { startServer } from "../server/index.js";
+import { startServer } from "../legacy/server/index.js";
 const encode = (b) => Buffer.from(b).toString("base64");
 const waitUntil = async (condition) => {
   for (let n = 0; n < 100; n++) {

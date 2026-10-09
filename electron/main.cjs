@@ -9,7 +9,7 @@ app
   .whenReady()
   .then(async () => {
     const { startServer } = await import(
-      pathToFileURL(path.join(__dirname, "../server/index.js")).href
+      pathToFileURL(path.join(__dirname, "../legacy/server/index.js")).href
     );
     server = await startServer({
       port: 0,

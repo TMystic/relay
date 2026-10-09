@@ -1,7 +1,7 @@
 const Y = require('yjs');
 const { WebSocket } = require('ws');
 const { EventEmitter } = require('node:events');
-const { sharedPath, delta } = require('./files.cjs');
+const { sharedPath, delta } = require('../extension/files.cjs');
 const encode = bytes => Buffer.from(bytes).toString('base64');
 function parseInvite(value) {
   const url = new URL(value);

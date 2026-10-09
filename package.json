@@ -1,27 +1,32 @@
 {
   "name": "relay-editor",
-  "version": "0.2.0",
+  "version": "0.4.5",
   "private": true,
   "type": "module",
   "main": "electron/editor-main.cjs",
   "scripts": {
     "build": "vite build --configLoader runner",
     "start": "npm run build:desktop && electron .",
-    "server": "node server/index.js",
+    "server": "node scripts/seed-peer.cjs",
     "test": "node --test tests/*.test.js",
     "package:win": "npm run build:desktop && electron-builder --win nsis portable --x64 --publish never",
     "package:linux": "npm run build:desktop && electron-builder --linux deb --x64 --publish never",
     "package:dir": "npm run build:desktop && electron-builder --dir --publish never",
     "build:extension": "node scripts/build-extension.mjs",
     "prepare:engine": "node scripts/prepare-engine.mjs",
-    "build:desktop": "npm run build && npm run build:extension && npm run prepare:engine",
-    "start:classic": "npm run build && electron . --classic",
-    "test:engine": "node scripts/test-engine.mjs"
+    "build:desktop": "npm run build:extension && npm run prepare:engine",
+    "start:classic": "node -e \"throw new Error('Restore the 0.2 backup to use the classic cloud desktop.')\"",
+    "test:engine": "node scripts/test-engine.mjs",
+    "seed": "node scripts/seed-peer.cjs",
+    "server:legacy": "node legacy/server/index.js",
+    "package:beta": "node scripts/package-beta.mjs"
   },
   "dependencies": {
     "diff": "^8.0.2",
+    "hyperdht": "6.34.0",
+    "hyperswarm": "4.17.2",
     "lib0": "^0.2.114",
-    "monaco-editor": "^0.55.1",
+    "monaco-editor": "0.55.1",
     "ws": "^8.18.3",
     "y-indexeddb": "^9.0.12",
     "y-monaco": "^0.1.6",
@@ -29,10 +34,10 @@
     "yjs": "^13.6.27"
   },
   "devDependencies": {
-    "electron": "^40.0.0",
+    "electron": "44.5.1",
     "electron-builder": "26.15.3",
-    "vite": "^6.1.0",
-    "esbuild": "0.25.12"
+    "esbuild": "0.25.12",
+    "vite": "^6.1.0"
   },
   "description": "Relay collaborative desktop coding editor",
   "author": {
@@ -49,11 +54,8 @@
       "buildResources": "build"
     },
     "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "server/**/*",
-      "package.json",
-      "!**/*.map"
+      "electron/editor-main.cjs",
+      "package.json"
     ],
     "win": {
       "icon": "build/icon.ico",
@@ -123,5 +125,12 @@
       ],
       "afterInstall": "scripts/linux-after-install.tpl"
     }
+  },
+  "overrides": {
+    "dompurify": "3.4.16",
+    "@electron/get": "5.1.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

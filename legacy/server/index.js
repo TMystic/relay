@@ -9,7 +9,7 @@ import { diffLines } from "diff";
 import { cloudStore } from "./cloud-store.js";
 import { readJson, validToken, publishRoom } from "./share-local.js";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const colors = ["#6bbcff", "#f4bb73", "#b7a0ff", "#6fd6bb", "#f08bad"];
 const encode = (value) => Buffer.from(value).toString("base64");
 const decode = (value) => new Uint8Array(Buffer.from(value, "base64"));

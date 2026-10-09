@@ -1,0 +1,44 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const {PeerSession,createWorkspace,sealSnapshot}=require('../extension/peer-session.cjs');
+const {Recovery}=require('../extension/recovery.cjs');
+const url=process.env.RELAY_RECOVERY_URL || require('../extension/recovery-default.json').url;
+const codeFile=process.env.RELAY_RECOVERY_SETUP_FILE || path.resolve('.tools/recovery-owner-code.txt');
+const config={...createWorkspace('Synthetic recovery verification',{'a.js':'base\n'},{protocol:2}),recovery:{url,policy:'failure-only'}};
+const peers=[];let client;const blocks=new Map(),storage={storeBlock:(r,b)=>blocks.set(r,b),loadBlock:r=>blocks.get(r)};
+const checks=[];
+fs.mkdirSync('.tools',{recursive:true});fs.writeFileSync('.tools/live-recovery-fixture.json',JSON.stringify({room:config.room,purpose:'synthetic regression only'}));
+try {
+ const unauth=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+ assert.equal(unauth.status,401);checks.push('Unauthenticated endpoint access rejected');
+ client=new Recovery(config);await client.provision(fs.readFileSync(codeFile,'utf8').trim());
+ checks.push('Owner setup provisions a private recovery room');
+ const original=new PeerSession(config,{...storage,initialFiles:{'a.js':'base\n'},checkpoint:()=>{}});peers.push(original);
+ const cached=sealSnapshot(config.token,original.snapshot());
+ const alice=new PeerSession({...config,recoveryDevice:crypto.randomBytes(16).toString('hex')},{...storage,cached,checkpoint:()=>{}});peers.push(alice);
+ const bob=new PeerSession({...config,recoveryDevice:crypto.randomBytes(16).toString('hex')},{...storage,cached,checkpoint:()=>{}});peers.push(bob);
+ alice.edit('a.js','Alice offline\nbase\n');await alice.recoverNow();
+ bob.edit('a.js','base\nBob offline\n');await bob.recoverNow();
+ assert.match(bob.files().get('a.js'),/Alice offline/);
+ checks.push('Independent offline device edits merge through live encrypted recovery');
+ const diskFull=new PeerSession({...config,recoveryDevice:crypto.randomBytes(16).toString('hex')},{...storage,cached,checkpoint:()=>{}});peers.push(diskFull);
+ diskFull.checkpoint=()=>{throw new Error('Simulated disk full');};
+ diskFull.edit('a.js','Disk-full edit\nbase\n');await diskFull.saveFlight;
+ assert.equal(diskFull.localDurable,false);assert.equal(diskFull.cloudState,diskFull.recoveryHash());
+ checks.push('Failed local checkpoint saves durably to live Supabase');
+ await Promise.all(peers.map(p=>p.close()));
+ const late=new PeerSession({...config,recoveryDevice:crypto.randomBytes(16).toString('hex')},{...storage,checkpoint:()=>{}});peers.push(late);
+ await late.recoverNow();assert.equal(late.ready,true);
+ for(const text of ['Alice offline','Bob offline','Disk-full edit'])assert.match(late.files().get('a.js'),new RegExp(text));
+ checks.push('New device recovers the merged project with every original peer closed');
+ const wrong=new Recovery({...config,token:crypto.randomBytes(32).toString('hex')});
+ try{await assert.rejects(wrong.read(),/401/);}finally{wrong.close();}
+ checks.push('Incorrect room capability rejected');
+ const report={success:true,room:config.room,url,checks};
+ fs.mkdirSync('.tools',{recursive:true});fs.writeFileSync('.tools/live-recovery-result.json',JSON.stringify(report,null,2));
+ console.log(JSON.stringify(report,null,2));
+}finally{client?.close();await Promise.all(peers.map(p=>p.close()));}

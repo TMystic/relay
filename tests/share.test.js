@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import * as Y from 'yjs';
 import { WebSocket } from 'ws';
-import { startServer } from '../server/index.js';
+import { startServer } from '../legacy/server/index.js';
 
 test('desktop invite imports existing code and history, reuses its public invite, and remembers it on restart', async () => {
   const dirs = [0, 1].map(() => mkdtempSync(path.join(os.tmpdir(), 'relay-share-')));

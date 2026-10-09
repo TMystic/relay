@@ -1,3 +1,7 @@
+# Historical classic UI contract (0.2)
+
+The active 0.3 peer design is documented in PEER-ARCHITECTURE.md.
+
 # Relay behavior contract
 
 Product source: the user's October 2, 2026 request for a desktop editor where teammates' fixes reach everyone without pushing/pulling. See README.md for prototype boundaries.
@@ -9,7 +13,7 @@ Product source: the user's October 2, 2026 request for a desktop editor where te
 | Form       | index.html forms and submitConnect/file-form in src/main.js | This contract            | join / new file             | browser validation and file creation |
 | Scrollbar  | src/style.css global baseline                               | DESIGN.md                | panel geometry              | computed style                       |
 | Toast      | notify in src/main.js                                       | This contract            | export / file feedback      | browser live region                  |
-| CRUD       | server/index.js room protocol                               | User brief and README.md | create/read/edit; no delete | tests/sync.test.js                   |
+| CRUD       | legacy/server/index.js room protocol                               | User brief and README.md | create/read/edit; no delete | tests/sync.test.js                   |
 
 ## Flows and recovery
 

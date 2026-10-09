@@ -5,8 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { WebSocket } from 'ws';
 import * as Y from 'yjs';
-import { startServer } from '../server/index.js';
-import { cloudStore } from '../server/cloud-store.js';
+import { startServer } from '../legacy/server/index.js';
+import { cloudStore } from '../legacy/server/cloud-store.js';
 
 test('hosted rooms survive a fresh disk, with private bootstrap and durable acknowledgments', async () => {
   const records = new Map();

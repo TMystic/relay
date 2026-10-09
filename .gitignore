@@ -9,3 +9,8 @@ engine-runtime/
 .engine-test/
 desktop-assets/
 extension/dist/
+
+.backups/
+.tools/
+
+output/

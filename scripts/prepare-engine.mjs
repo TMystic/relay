@@ -10,7 +10,8 @@ const platform = process.argv[2] || process.platform;
 const release = JSON.parse(fs.readFileSync(path.join(root, 'scripts/engine-release.json')));
 const asset = release[platform];
 if (!asset) throw new Error('Relay engine supports Windows x64 and Linux x64.');
-const target = path.join(root, 'engine-runtime');
+const target = process.argv[3] ? path.resolve(root,process.argv[3]) : path.join(root,'engine-runtime');
+if(!target.startsWith(root+path.sep))throw new Error('Engine destination must stay inside the project.');
 const stamp = path.join(target, '.relay-engine-version');
 if (fs.existsSync(stamp) && fs.readFileSync(stamp, 'utf8') === `${release.version}:${platform}`) process.exit(0);
 const cache = path.join(root, '.engine-cache'); fs.mkdirSync(cache, { recursive: true });
@@ -26,10 +27,17 @@ if (!fs.existsSync(archive) || await hash(archive) !== asset.sha256) {
 }
 if (!target.startsWith(root + path.sep)) throw new Error('Invalid engine destination.');
 fs.mkdirSync(target, { recursive: true });
-execFileSync('tar', platform === 'win32' ? ['-xf', archive, '-C', target] : ['-xzf', archive, '-C', target], { stdio: 'inherit' });
+if(platform==='win32' && process.platform!=='win32') {
+ execFileSync('python3',['-c','import zipfile,sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])',archive,target],{stdio:'inherit'});
+} else execFileSync('tar',platform==='win32'?['-xf',archive,'-C',target]:['-xzf',archive,'-C',target],{stdio:'inherit'});
 const productPath = path.join(target, 'resources/app/product.json');
 const product = JSON.parse(fs.readFileSync(productPath, 'utf8'));
 Object.assign(product, { nameShort: 'Relay', nameLong: 'Relay Collaborative Editor', applicationName: 'relay-code', dataFolderName: '.relay-code', urlProtocol: 'relay-code', win32AppUserModelId: 'io.github.tmystic.relay.editor' });
+if(process.env.RELAY_BETA==='1')Object.assign(product,{
+ nameShort:'Relay Beta Tester',nameLong:'Relay Beta Tester',
+ applicationName:'relay-beta-code',dataFolderName:'.relay-beta-code',
+ urlProtocol:'relay-beta-code',win32AppUserModelId:'io.github.tmystic.relay.beta.editor'
+});
 // Retain upstream licenses and the Open VSX gallery. Updates ship through Relay installers.
 delete product.updateUrl;
 fs.writeFileSync(productPath, JSON.stringify(product, null, 2));

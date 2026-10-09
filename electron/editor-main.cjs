@@ -2,11 +2,13 @@ const { app, dialog } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
+const beta = require('../package.json').relayChannel === 'beta';
 if (process.argv.includes('--classic')) {
-  require('./main.cjs');
+  dialog.showErrorBox('Classic version retained in backup','Relay 0.3 uses peer collaboration. Restore the 0.2 backup to run the cloud companion.');
+  app.quit();
 } else {
   if (process.env.RELAY_USER_DATA) app.setPath('userData',process.env.RELAY_USER_DATA);
-  if(process.platform==='win32')app.setAppUserModelId('io.github.tmystic.relay');
+  if(process.platform==='win32')app.setAppUserModelId(beta ? 'io.github.tmystic.relay.beta' : 'io.github.tmystic.relay');
   app.whenReady().then(async()=>{
     const base=app.isPackaged ? process.resourcesPath : path.resolve(__dirname,'..');
     const engine=path.join(base,app.isPackaged ? 'engine' : 'engine-runtime');
@@ -20,7 +22,7 @@ if (process.argv.includes('--classic')) {
     const settings=path.join(settingsDir,'settings.json');
     if(!fs.existsSync(settings))fs.writeFileSync(settings,JSON.stringify({
       'workbench.colorTheme':'Default Dark Modern',
-      'window.title':'${dirty}${activeEditorShort}${separator}${rootName}${separator}Relay',
+      'window.title':'${dirty}${activeEditorShort}${separator}${rootName}${separator}'+(beta?'Relay Beta Tester':'Relay'),
       'workbench.startupEditor':'none','telemetry.telemetryLevel':'off',
     },null,2));
     const manifest=JSON.parse(fs.readFileSync(path.join(base,app.isPackaged ? 'app.asar/package.json' : 'package.json'),'utf8'));
